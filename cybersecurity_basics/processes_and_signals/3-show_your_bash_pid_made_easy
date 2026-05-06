@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# This script shows PIDs and names of processes containing the word 'bash'
+# shellcheck disable=SC2009
+for pid in /proc/[0-9]*; do
+    cmd=$(basename "$(readlink "$pid/exe" 2>/dev/null)" 2>/dev/null)
+    if echo "$cmd" | grep -q bash; then
+        echo "$(basename "$pid") $cmd"
+    fi
+done
