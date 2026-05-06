@@ -1,3 +1,2 @@
 #!/bin/bash
-sudo ss -tpan
-
+ss -tanp
