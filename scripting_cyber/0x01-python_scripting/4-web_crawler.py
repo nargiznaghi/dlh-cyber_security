@@ -20,7 +20,7 @@ def crawl_website(start_url, max_depth=2, visited=None, current_depth=0):
         response = requests.get(start_url, timeout=5)
         response.raise_for_status()
     except requests.exceptions.RequestException:
-        return visited  # unreachable → return what we have
+        return visited
 
     print(f"Crawling: {start_url}")
     visited.add(start_url)
@@ -30,7 +30,7 @@ def crawl_website(start_url, max_depth=2, visited=None, current_depth=0):
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Extract all <a href="..."> links
+    # Extract all links
     for link in soup.find_all("a", href=True):
         href = link.get("href")
 
