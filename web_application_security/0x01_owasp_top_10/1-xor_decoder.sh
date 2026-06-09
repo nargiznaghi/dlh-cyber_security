@@ -1,26 +1,14 @@
 #!/bin/bash
 
-# Check argument
-if [ -z "$1" ]
-then
-    echo "Usage: $0 {xor}encoded_string"
-    exit 1
-fi
+encoded="${1#\{xor\}}"
 
-# Remove {xor} prefix
-input="$1"
-prefix="{xor}"
-cleaned="${input#$prefix}"
-
-# Base64 decode
-decoded=$(echo "$cleaned" | base64 -d 2>/dev/null)
-
-# XOR each byte with 0xFF
-result=""
-for byte in $(echo -n "$decoded" | od -An -t u1)
+printf '%s' "$encoded" | base64 -d | od -An -t u1 | tr -s ' ' '\n' | while read -r byte
 do
-    xor=$((255 - byte))
-    result="$result$(printf "\\$(printf '%03o' "$xor")")"
+	if [ -n "$byte" ]
+	then
+		value=$((byte ^ 95))
+		printf "\\$(printf '%03o' "$value")"
+	fi
 done
 
-echo "$result"
+printf '\n'
