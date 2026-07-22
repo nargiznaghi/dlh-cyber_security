@@ -1,35 +1,73 @@
-# 9. The OSINT Hunt
+## The OSINT Hunt
 
-## 1. FortiGate FortiOS Vulnerability
+## 1. FortiGate FortiOS
 
-* **Source:** https://nvd.nist.gov/vuln/detail/CVE-2024-21762 (veya CISA Advisory URL)
-* **CVE:** CVE-2024-21762
-* **Affected Product:** MedDefense FortiGate 100F Firewall
-* **Why the Scan Missed It:** The automated scanner performed an unauthenticated external network scan. It could not fingerprint the underlying FortiOS firmware version behind the firewall or inspect administrative interfaces that were restricted.
-* **CVSS / Severity:** 9.8 (Critical)
-* **MedDefense Impact:** An unauthenticated remote attacker could execute arbitrary code/commands on the FortiGate 100F via crafted HTTP requests to the SSL-VPN service, gaining full control over the perimeter firewall and entry into the internal network.
-* **Recommendation:** Upgrade FortiOS to the latest patched version immediately, or temporarily disable SSL-VPN if patching cannot be applied right away.
+**Source:**  
+[https://nvd.nist.gov/vuln/detail/CVE-2024-55591](https://nvd.nist.gov/vuln/detail/CVE-2024-55591)  
+[https://www.fortiguard.com/psirt/FG-IR-24-535](https://www.fortiguard.com/psirt/FG-IR-24-535)
 
----
+**CVE:** CVE-2024-55591
 
-## 2. Microsoft Office 365 / Entra ID Attack Vector / Vulnerability
+**Affected Product:** MedDefense FortiGate 100F, **only if it runs FortiOS 7.0.0 through 7.0.16**.
 
-* **Source:** CISA Alert / Microsoft Security Advisory (örnek: https://www.cisa.gov/news-events/cybersecurity-advisories/...)
-* **CVE:** N/A (AitM / OAuth Phishing Technique) veya CVE-2023-23397
-* **Affected Product:** MedDefense O365 E3 Tenant & Entra ID Identity Infrastructure
-* **Why the Scan Missed It:** SaaS and cloud infrastructure like Microsoft 365 were entirely out of scope for the local network vulnerability scanner. The scanner has no access to tenant configurations or cloud authentication logs.
-* **CVSS / Severity:** High / Critical
-* **MedDefense Impact:** Attackers using Adversary-in-the-Middle (AitM) phishing proxies can steal session tokens, bypass Multi-Factor Authentication (MFA), and gain persistent access to executive emails, medical records in SharePoint, or internal communications.
-* **Recommendation:** Enforce FIDO2-based / Certificate-Based MFA, restrict user consent for third-party OAuth applications in Entra ID, and enable Conditional Access policies to block risky sign-ins.
+**Why the Scan Missed It:** The internal scan did not confirm the firewall firmware version or assess the FortiGate management interface.
+
+**CVSS / Severity:** 9.8 — Critical
+
+**MedDefense Impact:** A remote attacker could gain super-admin privileges and change firewall rules, VPN settings and network access.
+
+**Recommendation:** Check the installed FortiOS version. If it is 7.0.0–7.0.16, upgrade to FortiOS 7.0.17 or later and restrict management access.
+
+Fortinet and NVD both identify FortiOS 7.0.0–7.0.16 as affected and state that crafted requests can provide super-admin access.
 
 ---
 
-## 3. Synology DSM 7 Vulnerability
+## 2. Microsoft 365 / Entra ID
 
-* **Source:** https://nvd.nist.gov/vuln/detail/CVE-2023-5561 (veya Synology Security Advisory URL)
-* **CVE:** CVE-2023-5561
-* **Affected Product:** MedDefense Backup NAS (Running Synology DSM 7)
-* **Why the Scan Missed It:** The NAS was located on a isolated backup VLAN, and the scanner lacked authenticated access to query installed internal packages and full DSM patch levels.
-* **CVSS / Severity:** 7.5 (High) / 9.8 (Critical)
-* **MedDefense Impact:** An attacker on the local network could exploit this vulnerability to execute arbitrary code on the backup NAS, leading to total destruction, encryption (ransomware), or exfiltration of enterprise backup data.
-* **Recommendation:** Update Synology DSM to the latest minor revision immediately, restrict access to the NAS management interface using network firewalls, and disable unused default DSM services/packages.
+**Source:**  
+[https://www.microsoft.com/en-us/security/blog/2025/05/29/defending-against-evolving-identity-attack-techniques/](https://www.microsoft.com/en-us/security/blog/2025/05/29/defending-against-evolving-identity-attack-techniques/)
+
+**CVE:** N/A — OSINT-backed attack technique
+
+**Attack Technique:** Adversary-in-the-middle phishing
+
+**Affected Product:** MedDefense Microsoft 365 and Entra ID user accounts.
+
+**Why the Scan Missed It:** Microsoft 365 was explicitly outside the scope of the internal vulnerability scan.
+
+**CVSS / Severity:** N/A — High risk
+
+**MedDefense Impact:** Attackers could steal credentials and session cookies, bypass normal MFA and access email, SharePoint or other Microsoft 365 services.
+
+**Recommendation:** Use phishing-resistant MFA, apply Conditional Access, monitor suspicious sign-ins and revoke stolen sessions when compromise is suspected.
+
+Microsoft identifies AiTM credential phishing as a common identity attack that attempts to bypass traditional MFA. This is an attack technique, not a software CVE.
+
+---
+
+## 3. Synology DSM
+
+**Source:**  
+[https://nvd.nist.gov/vuln/detail/CVE-2024-10441](https://nvd.nist.gov/vuln/detail/CVE-2024-10441)  
+[https://www.synology.com/en-af/security/advisory/Synology_SA_24_20](https://www.synology.com/en-af/security/advisory/Synology_SA_24_20)
+
+**CVE:** CVE-2024-10441
+
+**Affected Product:** MedDefense `NAS-01`, **only if its DSM version is older than one of the fixed versions listed below**:
+
+- DSM 7.2 before 7.2-64570-4
+    
+- DSM 7.2.1 before 7.2.1-69057-6
+    
+- DSM 7.2.2 before 7.2.2-72806-1
+    
+
+**Why the Scan Missed It:** The scan detected the DSM interface but did not record the exact DSM version needed to confirm this CVE.
+
+**CVSS / Severity:** 9.8 — Critical
+
+**MedDefense Impact:** A remote attacker could execute arbitrary code on the NAS. This could expose, delete or encrypt backup data.
+
+**Recommendation:** Check the exact DSM version and update it if it is within the affected range. Restrict the DSM management interface to authorized administrator systems.
+
+NVD and Synology identify CVE-2024-10441 as a Critical remote-code-execution vulnerability affecting specific unpatched DSM 7 versions.
