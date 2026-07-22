@@ -1,101 +1,73 @@
-# 8. The Budget Game: Strategic Resource Allocation
+# 8. The Budget Game
 
-## Part 1 - The Selection ($120,000 Budget Allocation)
+## Part 1 — The Selection
 
-MedDefense has been allocated a strict annual cybersecurity budget of **$120,000**. Based on quantitative cost-benefit analysis and risk prioritization, the funding strategy focuses on maximizing risk reduction per dollar spent.
+### Funded Controls
 
-### Funded Controls (Primary Recommendation)
+| Control                         |  Annual Cost | Estimated ALE Reduction |
+| ------------------------------- | -----------: | ----------------------: |
+| MFA for VPN and administrators  |      $12000 |              $2387000 |
+| Network segmentation            |      $35000 |              $2299000 |
+| Wazuh SIEM                      |      $26000 |                $349847 |
+| Endpoint Detection and Response |      $24000 |                $254619 |
+| Westside Clinic firewall        |       $9000 |                $190960 |
+| Offsite immutable backups       |      $14000 |                 $74403 |
+| **Total**                       | **$120000** |          **$5555829** |
 
-1. **MFA Deployment on VPN & Administrative Accounts**
-   * **Cost:** $5,000
-   * **Reasoning:** Eliminates the single largest attack vector (#1 remote breach path) using existing Microsoft 365 E3 licenses. Yields an ALE reduction of $3,437,280.
-2. **Network Segmentation (VLANs & Access Control Lists)**
-   * **Cost:** $15,000
-   * **Reasoning:** Prevents lateral movement of ransomware across servers, workstations, and medical device networks. Yields an ALE reduction of $1,484,900.
-3. **Offsite Immutable Backup Replication (AWS S3 Glacier with Object Lock)**
-   * **Cost:** $12,000
-   * **Reasoning:** Guarantees business continuity and operational recovery from catastrophic ransomware without paying extortion demands. Yields an ALE reduction of $1,272,250.
-4. **Endpoint Detection and Response (EDR) Upgrade (Sophos Intercept X)**
-   * **Cost:** $22,000
-   * **Reasoning:** Replaces basic legacy antivirus with behavioral ransomware blocking across 300 endpoints. Yields an ALE reduction of $214,000.
-5. **Enterprise Open-Source SIEM Deployment (Wazuh)**
-   * **Cost:** $18,000
-   * **Reasoning:** Establishes centralized audit log collection, alert aggregation, and baseline visibility for the security team. Yields an ALE reduction of $120,000.
-6. **Dedicated Next-Gen Firewall for Westside Clinic**
-   * **Cost:** $4,000
-   * **Reasoning:** Replaces a consumer-grade router at a remote clinical site with an enterprise security appliance. Yields an ALE reduction of $45,000.
+These controls provide prevention, detection and recovery while using the full budget.
 
----
+### Deferred Control
 
-### Deferred Controls (Next Fiscal Year / Phase 2)
+**Outsourced 24/7 SOC — $110,000**
 
-* **Security Awareness & Phishing Simulation Program**
-  * **Estimated Cost:** $15,000
-  * **Reasoning:** Deferred to FY2027 to allow core technical controls (MFA, Segmentation, EDR) to be fully implemented first.
+This control is deferred because it would consume almost the entire budget and overlaps with Wazuh monitoring. It can be reconsidered next year after MedDefense builds its internal monitoring capability.
 
----
+### Rejected Control
 
-### Rejected Controls
+**Full medical-device isolation and dedicated monitoring — $60,000**
 
-1. **24/7 Managed SOC Staffing (Outsourced MDR)**
-   * **Annual Cost:** $140,000
-   * **Reasoning:** Financial unfeasibility. The annual cost exceeds the entire $120,000 security budget while providing marginal extra risk reduction over open-source Wazuh SIEM + EDR alerting.
-2. **Full Medical Device Network Isolation with Dedicated Monitoring**
-   * **Annual Cost:** $45,000
-   * **Reasoning:** Negative net value (-$11,275). Network segmentation (Control 1) already isolates medical devices into dedicated VLANs at $0 added software cost.
+This control is rejected because its estimated ALE reduction is only $48,000, creating a negative net value of **-$12,000**. MedDefense should instead use lower-cost VLAN separation, password changes and existing monitoring tools.
+
+### Budget Position
+
+```text
+Available budget = $120,000
+Total spending   = $120,000
+Budget remaining = $0
+```
 
 ---
 
-### Budget Summary Table
+## Part 2 — Opportunity Cost
 
-| Metric | Amount ($) |
-| :--- | :---: |
-| **Total Annual Budget** | **$120,000** |
-| **Total Funded Spend** | **$76,000** |
-| **Remaining Budget Reserve (Unallocated Buffer)** | **$44,000** |
-| **Total Annual Risk Exposure Reduction (ALE Reduced)** | **$6,573,430** |
+By deferring the **outsourced 24/7 SOC**, MedDefense accepts an estimated **$150,000 in annual risk exposure** that continuous monitoring might otherwise reduce.
 
-*Note: The $44,000 unallocated reserve is retained for incident response retainers, emergency patching hardware, or unforeseen compliance auditing expenses.*
+This residual risk should be partly managed through Wazuh alerts, documented escalation procedures and on-call staff.
 
 ---
 
-## Part 2 - The Opportunity Cost
+## Part 3 — Alternative Allocation
 
-Every unfunded or deferred control leaves residual risk on the table. The opportunity cost of delaying controls expresses the unaddressed ALE accepted by MedDefense leadership:
+A lower cost alternative is to defer the EDR upgrade while funding the other five selected controls.
 
-1. **Deferring 24/7 Managed SOC Staffing:**
-   * **Opportunity Cost:** By deferring an outsourced 24/7 Managed SOC, MedDefense accepts an estimated **$90,000** in unaddressed annual risk exposure related to off-hours threat detection latency (partially compensated by automated EDR blocking and Wazuh alert rules).
-2. **Rejecting Dedicated Medical Device Monitoring Sensors:**
-   * **Opportunity Cost:** By rejecting specialized medical device monitoring software, MedDefense accepts an estimated **$1,775** in residual annual risk exposure for medical devices (effectively mitigated to acceptable levels via VLAN segmentation).
-3. **Deferring Formal Security Awareness Training Platform:**
-   * **Opportunity Cost:** By deferring dedicated phishing simulation software, MedDefense accepts an estimated **$36,000** in residual annual risk exposure from clinical staff credential handling and negligent insider mistakes.
+| Alternative Control  |        Cost |  ALE Reduction |
+| -------------------- | ----------: | -------------: |
+| MFA                  |     $12000 |     $2387000 |
+| Network segmentation |     $35000 |     $2299000 |
+| Wazuh SIEM           |     $26000 |       $349847 |
+| Westside firewall    |      $9000 |       $190960 |
+| Offsite backups      |     $14000 |        $74403 |
+| **Total**            | **$96000** | **$5301210** |
 
----
+### Compare the Allocations
 
-## Part 3 - The Alternative Allocation Strategy
+| Allocation             |     Cost | Estimated ALE Reduction |
+| ---------------------- | -------: | ----------------------: |
+| Primary recommendation | $120000 |              $5555829 |
+| Alternative allocation |  $96000 |              $5301210 |
+| Difference             |  $24000 |                $254619 |
 
-### Alternative Allocation (Aggressive Operational Expansion)
+The alternative costs **$24,000 less** while retaining about **95%** of the calculated risk reduction. However, the primary plan is preferred because EDR adds an important protection layer against ransomware and malware.
 
-An alternative proposal evaluates spending the entire $120,000 budget by adding a outsourced 24/7 SOC lite tier and formal security awareness training, while dropping the EDR upgrade and offsite backups:
+> These reductions overlap because several controls address the same risks. The totals are useful for comparing options but should not be treated as completely independent savings.
 
-* **MFA Deployment:** $5,000
-* **Network Segmentation:** $15,000
-* **Wazuh SIEM Deployment:** $18,000
-* **Westside Clinic Firewall:** $4,000
-* **Security Awareness Training Platform:** $15,000
-* **Outsourced SOC Lite (12/5 Coverage):** $63,000
-* **Total Cost:** **$120,000** (0 Reserve)
-
-### Comparative Analysis: Primary Recommendation vs. Alternative Allocation
-
-| Parameter | Primary Recommendation | Alternative Allocation |
-| :--- | :---: | :---: |
-| **Total Funded Cost** | **$76,000** | **$120,000** |
-| **Budget Reserve Maintained** | **$44,000** | **$0** |
-| **Total Risk Reduction (ALE Reduced)** | **$6,573,430** | **$5,112,000** |
-| **Ransomware Recovery Assurance** | **High** (Immutable AWS Backups) | **Low** (No Immutable Offsite Backup) |
-| **Endpoint Threat Prevention** | **High** (Sophos Intercept X EDR) | **Low** (Legacy Antivirus) |
-| **Financial Net Efficiency** | **Highest ($86.49 ALE saved per $ spent)** | **Lower ($42.60 ALE saved per $ spent)** |
-
-### Conclusion & Final Recommendation
-The **Primary Recommendation ($76,000 spend)** is vastly superior. It delivers **$1.46 Million MORE in total risk reduction** while spending **$44,000 LESS**, leaving a crucial financial contingency reserve for MedDefense.
