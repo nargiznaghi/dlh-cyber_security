@@ -52,10 +52,10 @@ Despite affecting entirely different vendors and products (medical device softwa
 
 ## Part 3: Recommendation for MedDefense Developers
 
-### Primary Focus Area: `CWE-20` (Improper Input Validation) & `CWE-787` (Out-of-bounds Write / Memory Safety)
+### Primary Focus Area: `CWE-787` (Out-of-bounds Write)
 
-If MedDefense internal software developers were to receive training on a single weakness category, they should focus on **Improper Input Validation and Memory Management**.
+If MedDefense internal software developers were to receive training on a single weakness category, they should focus exclusively on **CWE-787 (Out-of-bounds Write)**.
 
 #### Why this Category?
-1. **Severity of Impact:** Failure to validate inputs and properly handle memory boundaries directly leads to **Remote Code Execution (RCE)** vulnerabilities (as seen in `CVE-2021-44790`). RCE allows external threat actors to execute arbitrary commands, escalate privileges, and compromise patient database servers.
-2. **Preventative Return on Investment (ROI):** Sanitizing, validating, and parameterizing all external user inputs prevents entire classes of vulnerabilities simultaneously, including Buffer Overflows (`CWE-787`), SQL Injection (`CWE-89`), and Path Traversal (`CWE-22`).
+1. **Severity of Technical Impact:** `CWE-787` directly results in Remote Code Execution (RCE), the highest-severity technical impact possible in the MedDefense environment. Exploiting a heap or stack buffer overflow (as seen in `CVE-2021-44790`) allows external threat actors to take full control of host servers, bypass application controls, and compromise backend patient databases.
+2. **Business and Operational Risk:** Critical operational assets, including healthcare application servers and network-connected medical infrastructure, are vulnerable to memory corruption. Addressing `CWE-787` via secure coding practices (bounds checking, using memory-safe APIs, and rigorous buffer handling) eliminates the most devastating attack path available to ransomware groups targeting MedDefense.
