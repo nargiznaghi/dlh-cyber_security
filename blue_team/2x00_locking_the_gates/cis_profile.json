@@ -1,0 +1,167 @@
+[
+  {
+    "control_id": "5.2.1",
+    "title": "Ensure SSH PasswordAuthentication is disabled",
+    "cis_section": "5.2",
+    "severity": "critical",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "SSH brute force and credential dumping",
+    "implementation_task": "task_ssh_hardening",
+    "verification_method": "sshd -T | grep passwordauthentication",
+    "justification": "Disabling password auth prevents automated brute force attacks across all servers."
+  },
+  {
+    "control_id": "5.2.2",
+    "title": "Ensure SSH PermitRootLogin is disabled",
+    "cis_section": "5.2",
+    "severity": "critical",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "SSH lateral movement and direct root compromise",
+    "implementation_task": "task_ssh_hardening",
+    "verification_method": "sshd -T | grep permitrootlogin",
+    "justification": "Restricting direct root login forces administrators to use sudo for accountability."
+  },
+  {
+    "control_id": "3.1.1",
+    "title": "Disable IPv4 Forwarding",
+    "cis_section": "3.1",
+    "severity": "critical",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Pivoting and lateral movement between internal subnets",
+    "implementation_task": "task_kernel_hardening",
+    "verification_method": "sysctl net.ipv4.ip_forward",
+    "justification": "Prevents compromised servers from acting as routers to pivot into restricted zones."
+  },
+  {
+    "control_id": "3.1.2",
+    "title": "Ensure ICMP Redirects are not accepted",
+    "cis_section": "3.1",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01",
+    "threat_mapping": "Man-In-The-Middle (MITM) and traffic redirection",
+    "implementation_task": "task_kernel_hardening",
+    "verification_method": "sysctl net.ipv4.conf.all.accept_redirects",
+    "justification": "Disabling ICMP redirects prevents malicious routing table updates."
+  },
+  {
+    "control_id": "3.1.3",
+    "title": "Enable Reverse Path Filtering (RPF)",
+    "cis_section": "3.1",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01",
+    "threat_mapping": "IP spoofing attacks",
+    "implementation_task": "task_kernel_hardening",
+    "verification_method": "sysctl net.ipv4.conf.all.rp_filter",
+    "justification": "Ensures incoming packets arrive on the interface expected by the routing table."
+  },
+  {
+    "control_id": "5.3.1",
+    "title": "Ensure PAM password quality requirements are configured",
+    "cis_section": "5.3",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Weak credential guessing and dictionary attacks",
+    "implementation_task": "task_pam_hardening",
+    "verification_method": "grep pam_pwquality.so /etc/pam.d/common-password",
+    "justification": "Enforces complex passwords to mitigate local offline dictionary attacks."
+  },
+  {
+    "control_id": "5.3.2",
+    "title": "Ensure PAM lockout for failed attempts is configured",
+    "cis_section": "5.3",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Local brute force authentication attacks",
+    "implementation_task": "task_pam_hardening",
+    "verification_method": "grep pam_faillock.so /etc/pam.d/common-auth",
+    "justification": "Locks user accounts after specified consecutive failed login attempts."
+  },
+  {
+    "control_id": "2.1.1",
+    "title": "Ensure unneeded network services are disabled",
+    "cis_section": "2.1",
+    "severity": "critical",
+    "asset_scope": "billing-srv-01, web-srv-01",
+    "threat_mapping": "Unnecessary attack surface exposure",
+    "implementation_task": "task_service_minimization",
+    "verification_method": "systemctl is-active avahi-daemon",
+    "justification": "Disabling unused services minimizes listening sockets and vulnerabilities."
+  },
+  {
+    "control_id": "2.1.2",
+    "title": "Ensure legacy RPC and rsh services are removed",
+    "cis_section": "2.1",
+    "severity": "high",
+    "asset_scope": "billing-srv-01",
+    "threat_mapping": "Unencrypted remote command execution",
+    "implementation_task": "task_service_minimization",
+    "verification_method": "dpkg -l | grep rsh-server",
+    "justification": "Removes outdated and unencrypted legacy access protocols."
+  },
+  {
+    "control_id": "6.1.1",
+    "title": "Audit world-writable files and permissions",
+    "cis_section": "6.1",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Local privilege escalation via file tampering",
+    "implementation_task": "task_filesystem_hardening",
+    "verification_method": "find / -type f -perm -0002",
+    "justification": "Removes global write privileges to protect system binaries and configs."
+  },
+  {
+    "control_id": "6.1.2",
+    "title": "Audit SUID and SGID executables",
+    "cis_section": "6.1",
+    "severity": "high",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Privilege escalation via SUID binary abuse",
+    "implementation_task": "task_filesystem_hardening",
+    "verification_method": "find / -perm -4000",
+    "justification": "Restricts executable bits on binaries that execute with root context."
+  },
+  {
+    "control_id": "4.1.1",
+    "title": "Ensure auditd service is installed and enabled",
+    "cis_section": "4.1",
+    "severity": "critical",
+    "asset_scope": "billing-srv-01, web-srv-01, log-srv-01",
+    "threat_mapping": "Missing audit visibility and anti-forensics",
+    "implementation_task": "task_audit_logging",
+    "verification_method": "systemctl is-enabled auditd",
+    "justification": "Ensures system-level event tracing and logging is active."
+  },
+  {
+    "control_id": "4.1.2",
+    "title": "Ensure audit rules capture privileged commands",
+    "cis_section": "4.1",
+    "severity": "medium",
+    "asset_scope": "billing-srv-01, log-srv-01",
+    "threat_mapping": "Unauthorized sudo usage and privilege abuse",
+    "implementation_task": "task_audit_logging",
+    "verification_method": "auditctl -l | grep execve",
+    "justification": "Captures audit events for execution of root-level commands."
+  },
+  {
+    "control_id": "3.5.1",
+    "title": "Ensure default firewall drop policy for inbound traffic",
+    "cis_section": "3.5",
+    "severity": "medium",
+    "asset_scope": "billing-srv-01, web-srv-01",
+    "threat_mapping": "Exposed database and unauthenticated services",
+    "implementation_task": "task_firewall_hardening",
+    "verification_method": "ufw status verbose",
+    "justification": "Blocks unauthorized inbound connections by default."
+  },
+  {
+    "control_id": "4.2.1",
+    "title": "Ensure log retention policy is configured in journald",
+    "cis_section": "4.2",
+    "severity": "medium",
+    "asset_scope": "log-srv-01",
+    "threat_mapping": "Log rotation exhaust and missing incident evidence",
+    "implementation_task": "task_log_retention",
+    "verification_method": "grep MaxRetentionSec /etc/systemd/journald.conf",
+    "justification": "Retains system logs for required compliance and investigation periods."
+  }
+]
