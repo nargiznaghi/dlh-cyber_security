@@ -1,0 +1,167 @@
+[
+  {
+    "control_id": "5.2.1",
+    "status": "non_compliant",
+    "lynis_evidence": ["SSH-7408"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "4-ssh_hardening.sh",
+    "severity": "critical",
+    "priority_score": 95,
+    "operational_risk": "High risk of brute force authentication attacks.",
+    "expected_validation_check": "sshd -T | grep passwordauthentication"
+  },
+  {
+    "control_id": "5.2.2",
+    "status": "non_compliant",
+    "lynis_evidence": ["SSH-7408"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "4-ssh_hardening.sh",
+    "severity": "critical",
+    "priority_score": 90,
+    "operational_risk": "Direct root login allows untracked administrative actions.",
+    "expected_validation_check": "sshd -T | grep permitrootlogin"
+  },
+  {
+    "control_id": "3.1.1",
+    "status": "non_compliant",
+    "lynis_evidence": ["NETW-3012"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "5-kernel_hardening.sh",
+    "severity": "critical",
+    "priority_score": 88,
+    "operational_risk": "Allows attacker to use server as a network router to pivot.",
+    "expected_validation_check": "sysctl net.ipv4.ip_forward"
+  },
+  {
+    "control_id": "2.1.1",
+    "status": "non_compliant",
+    "lynis_evidence": ["DSHB-01"],
+    "affected_asset": "billing-srv-01, web-srv-01",
+    "remediation_script": "6-service_minimization.sh",
+    "severity": "critical",
+    "priority_score": 85,
+    "operational_risk": "Unnecessary services increase local attack surface.",
+    "expected_validation_check": "systemctl is-active avahi-daemon"
+  },
+  {
+    "control_id": "4.1.1",
+    "status": "non_compliant",
+    "lynis_evidence": ["ACCT-9622"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "7-audit_logging.sh",
+    "severity": "critical",
+    "priority_score": 82,
+    "operational_risk": "Lack of audit logging prevents incident forensic analysis.",
+    "expected_validation_check": "systemctl is-enabled auditd"
+  },
+  {
+    "control_id": "3.1.2",
+    "status": "non_compliant",
+    "lynis_evidence": ["NETW-3004"],
+    "affected_asset": "billing-srv-01, web-srv-01",
+    "remediation_script": "5-kernel_hardening.sh",
+    "severity": "high",
+    "priority_score": 75,
+    "operational_risk": "Vulnerable to Man-In-The-Middle traffic redirection.",
+    "expected_validation_check": "sysctl net.ipv4.conf.all.accept_redirects"
+  },
+  {
+    "control_id": "3.1.3",
+    "status": "non_compliant",
+    "lynis_evidence": ["NETW-3006"],
+    "affected_asset": "billing-srv-01, web-srv-01",
+    "remediation_script": "5-kernel_hardening.sh",
+    "severity": "high",
+    "priority_score": 72,
+    "operational_risk": "Exposes network to IP address spoofing.",
+    "expected_validation_check": "sysctl net.ipv4.conf.all.rp_filter"
+  },
+  {
+    "control_id": "5.3.1",
+    "status": "non_compliant",
+    "lynis_evidence": ["AUTH-9262"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "8-pam_hardening.sh",
+    "severity": "high",
+    "priority_score": 70,
+    "operational_risk": "Weak passwords vulnerable to dictionary attacks.",
+    "expected_validation_check": "grep pam_pwquality.so /etc/pam.d/common-password"
+  },
+  {
+    "control_id": "5.3.2",
+    "status": "non_compliant",
+    "lynis_evidence": ["AUTH-9286"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "8-pam_hardening.sh",
+    "severity": "high",
+    "priority_score": 68,
+    "operational_risk": "Unlimited login attempts permit brute-forcing.",
+    "expected_validation_check": "grep pam_faillock.so /etc/pam.d/common-auth"
+  },
+  {
+    "control_id": "2.1.2",
+    "status": "non_compliant",
+    "lynis_evidence": ["DSHB-02"],
+    "affected_asset": "billing-srv-01",
+    "remediation_script": "6-service_minimization.sh",
+    "severity": "high",
+    "priority_score": 65,
+    "operational_risk": "Cleartext management protocols subject to sniffing.",
+    "expected_validation_check": "dpkg -l | grep rsh-server"
+  },
+  {
+    "control_id": "6.1.1",
+    "status": "partially_compliant",
+    "lynis_evidence": ["FILE-7524"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "9-filesystem_permissions.sh",
+    "severity": "high",
+    "priority_score": 60,
+    "operational_risk": "World-writable files allow local privilege escalation.",
+    "expected_validation_check": "find / -type f -perm -0002"
+  },
+  {
+    "control_id": "6.1.2",
+    "status": "partially_compliant",
+    "lynis_evidence": ["FILE-7522"],
+    "affected_asset": "billing-srv-01, web-srv-01, log-srv-01",
+    "remediation_script": "9-filesystem_permissions.sh",
+    "severity": "high",
+    "priority_score": 58,
+    "operational_risk": "Unvetted SUID binaries can be exploited for escalation.",
+    "expected_validation_check": "find / -perm -4000"
+  },
+  {
+    "control_id": "4.1.2",
+    "status": "compliant",
+    "lynis_evidence": [],
+    "affected_asset": "billing-srv-01, log-srv-01",
+    "remediation_script": "none",
+    "severity": "medium",
+    "priority_score": 0,
+    "operational_risk": "None.",
+    "expected_validation_check": "auditctl -l | grep execve"
+  },
+  {
+    "control_id": "3.5.1",
+    "status": "compliant",
+    "lynis_evidence": [],
+    "affected_asset": "billing-srv-01, web-srv-01",
+    "remediation_script": "none",
+    "severity": "medium",
+    "priority_score": 0,
+    "operational_risk": "None.",
+    "expected_validation_check": "ufw status verbose"
+  },
+  {
+    "control_id": "4.2.1",
+    "status": "not_assessed",
+    "lynis_evidence": [],
+    "affected_asset": "log-srv-01",
+    "remediation_script": "none",
+    "severity": "medium",
+    "priority_score": 0,
+    "operational_risk": "Assessment pending log analysis tool installation.",
+    "expected_validation_check": "grep MaxRetentionSec /etc/systemd/journald.conf"
+  }
+]
