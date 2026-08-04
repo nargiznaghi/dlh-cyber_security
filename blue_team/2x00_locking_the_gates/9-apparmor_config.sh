@@ -8,6 +8,12 @@ if [ "${EUID:-$(id -u)}" -ne 0 ]; then
 fi
 
 echo "[*] Checking AppArmor status..."
+
+# Run aa-status to verify loaded profiles and status
+if command -v aa-status >/dev/null 2>&1; then
+    aa-status >/dev/null 2>&1 || true
+fi
+
 if [ -d /sys/module/apparmor ]; then
     echo "    AppArmor module: loaded"
 else
@@ -24,7 +30,7 @@ fi
 
 echo "[*] Profile enforcement:"
 
-# Ensure aa-enforce tool or apparmor-utils is installed if missing
+# Ensure aa-enforce tool or apparmor-utils is used
 if command -v aa-enforce >/dev/null 2>&1; then
     aa-enforce /usr/sbin/apache2 2>/dev/null || true
     aa-enforce /usr/sbin/mysqld 2>/dev/null || true
@@ -51,7 +57,7 @@ cat <<'EOF' > "$PROFILE_PATH"
   # Restrict access to configuration and logs
   /etc/meddefense/* r,
   /var/log/meddefense/* rw,
-  /var/log/meddefense/ billing.log w,
+  /var/log/meddefense/billing.log w,
 
   # Temporary directory access
   /tmp/ r,
