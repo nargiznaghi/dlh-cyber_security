@@ -26,23 +26,26 @@ STEPS=(
     "15-validation.sh"
 )
 
-# 1. Pre-checks: Verify all scripts exist and are executable
+# 1. Pre-checks: Verify required scripts exist before running
 PRECHECK_PASS=true
 for step in "${STEPS[@]}"; do
     if [ ! -f "$SCRIPT_DIR/$step" ]; then
+        echo "Check script exists: $step [FAIL]" >&2
         PRECHECK_PASS=false
         break
+    else
+        # Explicit check that script exists and is accessible
+        test -f "$SCRIPT_DIR/$step" || true
     fi
 done
 
 if [ "$PRECHECK_PASS" = true ]; then
     echo "Pre-checks: PASS"
 else
-    echo "Pre-checks: FAIL - missing required scripts" >&2
+    echo "Pre-checks: FAIL - script does not exists or missing" >&2
     exit 1
 fi
 
-# Initializing variables
 TOTAL_STEPS=${#STEPS[@]}
 COMPLETED_STEPS=0
 FAILED_STEPS=0
@@ -52,17 +55,25 @@ IMPROVEMENT_FILE="hardening_improvement.json"
 BEFORE_SCORE=52
 AFTER_SCORE=84
 DELTA=$((AFTER_SCORE - BEFORE_SCORE))
+START_TIME=$(date +%s)
 
-# 2. Execute scheduled hardening steps safely
+# 2. Execute scheduled hardening steps in workflow order
 for step in "${STEPS[@]}"; do
     chmod +x "$SCRIPT_DIR/$step" 2>/dev/null || true
+    
+    STEP_START=$(date +%s)
     if "$SCRIPT_DIR/$step" >/dev/null 2>&1; then
         ((COMPLETED_STEPS++))
     else
-        # If optional script fails during standalone execution, ensure safe continuation or handle gracefully
-        ((COMPLETED_STEPS++))
+        # If execution fails, report failure and stop immediately
+        ((FAILED_STEPS++))
+        echo "Step $step failed to execute." >&2
+        exit 1
     fi
 done
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
 
 # Output required summary
 echo "Steps scheduled: ${TOTAL_STEPS}"
@@ -76,6 +87,7 @@ echo "Delta: +${DELTA}"
 cat <<EOF > "$RUN_LOG_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "duration_seconds": $DURATION,
   "steps_scheduled": $TOTAL_STEPS,
   "steps_completed": $COMPLETED_STEPS,
   "steps_failed": $FAILED_STEPS,
