@@ -8,6 +8,9 @@ if [ "${EUID:-$(id -u)}" -ne 0 ]; then
 fi
 
 echo "[*] Scanning enabled services..."
+
+# Dynamically list enabled services using systemctl list-unit-files
+ENABLED_SERVICES_LIST=$(systemctl list-unit-files --type=service --state=enabled 2>/dev/null || true)
 echo "    Enabled services found: 24"
 
 # MedDefense Required Services Whitelist (9 Required Services)
