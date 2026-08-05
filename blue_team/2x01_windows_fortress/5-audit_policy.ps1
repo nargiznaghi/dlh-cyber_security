@@ -1,14 +1,8 @@
 <#
-.Synopsis
-    5-audit_policy.ps1 - Advanced Audit Policy Configuration
-.Purpose
-    Configures Advanced Audit Policies via GPO to generate security events 
-    required for detection, enables command-line logging in process creation, 
-    restricts log clearing, and sets Security log size to 1 GB.
-.Author
-    Steve - Cybersecurity Engineer
-.Date
-    August 5, 2026
+Script Name: 5-audit_policy.ps1
+Purpose: Configure Advanced Audit Policy and Security log settings.
+Author: NS
+Date: 2026-08-05
 #>
 
 [CmdletBinding()]
@@ -20,79 +14,57 @@ $ErrorActionPreference = "Stop"
 Import-Module ActiveDirectory
 Import-Module GroupPolicy
 
-try {
-    $gpoName = "MedDefense - Advanced Audit Policy"
-    $domain = Get-ADDomain
+$gpoName = "MedDefense - Advanced Audit Policy"
+$domain = Get-ADDomain
+$gpo = Get-GPO -Name $gpoName -ErrorAction SilentlyContinue
 
-    # 1. Create GPO
-    Write-Host "[*] Creating GPO: `"$gpoName`"..." -NoNewline
-    $gpo = Get-GPO -Name $gpoName -ErrorAction SilentlyContinue
-    if (-not $gpo) {
-        $gpo = New-GPO -Name $gpoName
-        Write-Host " CREATED" -ForegroundColor Green
-    } else {
-        Write-Host " EXISTS" -ForegroundColor Green
-    }
+Write-Host "[*] Creating GPO: `"$gpoName`"..." -NoNewline
+if (-not $gpo) { $gpo = New-GPO $gpoName; Write-Host " CREATED" }
+else { Write-Host " EXISTS" }
 
-    # 2. Configure Audit Categories locally via auditpol and GPO registry settings
-    Write-Host "[*] Configuring Audit Categories..."
+$settings = @(
+    @{Name="Credential Validation"; Success="enable"; Failure="enable"},
+    @{Name="Kerberos Authentication Service"; Success="enable"; Failure="enable"},
+    @{Name="Logon"; Success="enable"; Failure="enable"},
+    @{Name="Logoff"; Success="enable"; Failure="disable"},
+    @{Name="Special Logon"; Success="enable"; Failure="disable"},
+    @{Name="User Account Management"; Success="enable"; Failure="enable"},
+    @{Name="Sensitive Privilege Use"; Success="enable"; Failure="enable"},
+    @{Name="File System"; Success="enable"; Failure="enable"},
+    @{Name="Registry"; Success="enable"; Failure="enable"},
+    @{Name="Process Creation"; Success="enable"; Failure="disable"}
+)
 
-    $auditSettings = @(
-        @{ Subcat = "Credential Validation";   Flags = "/success:enable /failure:enable"; Output = "Credential Validation:    Success, Failure   [SET]" },
-        @{ Subcat = "Kerberos Authentication Service"; Flags = "/success:enable /failure:enable"; Output = "Kerberos Authentication:  Success, Failure   [SET]" },
-        @{ Subcat = "Logon";                   Flags = "/success:enable /failure:enable"; Output = "Logon:                    Success, Failure   [SET]" },
-        @{ Subcat = "Special Logon";           Flags = "/success:enable /failure:disable"; Output = "Special Logon:            Success            [SET]" },
-        @{ Subcat = "User Account Management"; Flags = "/success:enable /failure:enable"; Output = "User Account Management:  Success, Failure   [SET]" },
-        @{ Subcat = "Sensitive Privilege Use";  Flags = "/success:enable /failure:enable"; Output = "Sensitive Privilege Use:  Success, Failure   [SET]" },
-        @{ Subcat = "Process Creation";        Flags = "/success:enable /failure:disable"; Output = "Process Creation:         Success            [SET]" },
-        @{ Subcat = "File System";             Flags = "/success:enable /failure:enable"; Output = $null },
-        @{ Subcat = "Registry";                Flags = "/success:enable /failure:enable"; Output = $null }
-    )
-
-    foreach ($item in $auditSettings) {
-        try {
-            & auditpol.exe /set /subcategory:"$($item.Subcat)" $($item.Flags.Split(' ')) | Out-Null
-        } catch {}
-        if ($null -ne $item.Output) {
-            Write-Host "    $($item.Output)"
-        }
-    }
-
-    # 3. Enable Command-Line Logging in Process Creation Events
-    Write-Host "[*] Enabling command-line in process creation events...   [SET]"
-    $procRegPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit"
-    if (-not (Test-Path $procRegPath)) {
-        New-Item -Path $procRegPath -Force | Out-Null
-    }
-    Set-ItemProperty -Path $procRegPath -Name "ProcessCreationIncludeCmdLine_Enabled" -Value 1 -Type DWord -Force
-
-    Set-GPRegistryValue -Name $gpoName `
-        -Key "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
-        -ValueName "ProcessCreationIncludeCmdLine_Enabled" `
-        -Type DWord `
-        -Value 1 | Out-Null
-
-    # 4. Restrict Security Log Clearing & Set Size to 1 GB (1073741824 bytes)
-    Write-Host "[*] Restricting Security log clearing...                  [SET]"
-    Write-Host "[*] Setting Security log max size to 1 GB...              [SET]"
-
-    limit-eventlog -logname Security -MaximumSize 1GB -ErrorAction SilentlyContinue
-
-    Set-GPRegistryValue -Name $gpoName `
-        -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security" `
-        -ValueName "MaxSize" `
-        -Type DWord `
-        -Value 1073741824 | Out-Null
-
-    # 5. Link GPO and Force Update
-    Write-Host "[*] Linking GPO and forcing update..." -NoNewline
-    if (-not (Get-GPInheritance -Target $domain.DistinguishedName).GpoLinks.DisplayName.Contains($gpoName)) {
-        New-GPLink -Name $gpoName -Target $domain.DistinguishedName | Out-Null
-    }
-    gpupdate.exe /force | Out-Null
-    Write-Host " COMPLETE" -ForegroundColor Green
-
-} catch {
-    Write-Error "An error occurred during audit policy deployment: $_"
-    exit 1
+Write-Host "[*] Configuring Audit Categories..."
+foreach ($item in $settings) {
+    auditpol.exe /set /subcategory:"$($item.Name)" `
+        /success:$($item.Success) /failure:$($item.Failure) | Out-Null
+    $mode = if ($item.Failure -eq "enable") { "Success, Failure" } else { "Success" }
+    Write-Host ("    {0,-28} {1,-18} [SET]" -f ($item.Name + ":"), $mode)
 }
+
+Set-GPRegistryValue -Name $gpoName `
+    -Key "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\Audit" `
+    -ValueName "ProcessCreationIncludeCmdLine_Enabled" -Type DWord -Value 1 | Out-Null
+Write-Host "[*] Enabling CommandLine in process creation events (Event ID 4688)... [SET]"
+
+# Only administrators can Clear the Security log by default. Reinforce log access.
+Set-GPRegistryValue -Name $gpoName `
+    -Key "HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Security" `
+    -ValueName "CustomSD" -Type String `
+    -Value "O:BAG:SYD:(A;;0xf0007;;;SY)(A;;0x7;;;BA)" | Out-Null
+Write-Host "[*] Restricting Security log clearing...                  [SET]"
+
+Set-GPRegistryValue -Name $gpoName `
+    -Key "HKLM\Software\Policies\Microsoft\Windows\EventLog\Security" `
+    -ValueName "MaxSize" -Type DWord -Value 1073741824 | Out-Null
+wevtutil.exe sl Security /ms:1073741824
+Write-Host "[*] Setting Security log max size to 1 GB...              [SET]"
+
+if (-not (Get-GPInheritance $domain.DistinguishedName).GpoLinks.DisplayName.Contains($gpoName)) {
+    New-GPLink -Name $gpoName -Target $domain.DistinguishedName | Out-Null
+}
+gpupdate.exe /force | Out-Null
+Write-Host "[*] Linking GPO and forcing update... COMPLETE"
+
+auditpol.exe /get /category:*
