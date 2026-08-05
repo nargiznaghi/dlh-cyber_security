@@ -1,12 +1,47 @@
 <Sysmon schemaversion="4.90">
   <HashAlgorithms>md5,sha256,imphash</HashAlgorithms>
   <EventFiltering>
+    <!-- Event ID 1: Process Creation -->
     <RuleGroup level="include" onmatch="include">
-      <ProcessCreate onmatch="include" />
+      <ProcessCreate onmatch="include">
+        <!-- Rule 1: Rclone detection -->
+        <OriginalFileName condition="is">rclone.exe</OriginalFileName>
+        <Image condition="image">rclone.exe</Image>
+        <!-- Rule 3: Encoded PowerShell -->
+        <CommandLine condition="contains">-enc</CommandLine>
+        <!-- Rule 4: Shadow deletion (vssadmin) -->
+        <Image condition="image">vssadmin.exe</Image>
+        <CommandLine condition="contains">delete shadows</CommandLine>
+        <!-- Rule 5: Scheduled task persistence -->
+        <Image condition="image">schtasks.exe</Image>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- Event ID 3: Network Connection -->
+    <RuleGroup level="include" onmatch="include">
       <NetworkConnect onmatch="include" />
+    </RuleGroup>
+
+    <!-- Event ID 7: Image Loaded -->
+    <RuleGroup level="include" onmatch="include">
       <ImageLoad onmatch="include" />
+    </RuleGroup>
+
+    <!-- Event ID 11: File Create -->
+    <RuleGroup level="include" onmatch="include">
       <FileCreate onmatch="include" />
-      <RegistryEvent onmatch="include" />
+    </RuleGroup>
+
+    <!-- Event ID 13: Registry Event -->
+    <RuleGroup level="include" onmatch="include">
+      <RegistryEvent onmatch="include">
+        <!-- Rule 2: PsExec service installation -->
+        <TargetObject condition="contains">PSEXESVC</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- Event ID 22: DNS Query -->
+    <RuleGroup level="include" onmatch="include">
       <DnsQuery onmatch="include" />
     </RuleGroup>
   </EventFiltering>
