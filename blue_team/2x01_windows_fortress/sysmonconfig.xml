@@ -1,0 +1,13 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>md5,sha256,imphash</HashAlgorithms>
+  <EventFiltering>
+    <RuleGroup level="include" onmatch="include">
+      <ProcessCreate onmatch="include" />
+      <NetworkConnect onmatch="include" />
+      <ImageLoad onmatch="include" />
+      <FileCreate onmatch="include" />
+      <RegistryEvent onmatch="include" />
+      <DnsQuery onmatch="include" />
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>
