@@ -63,7 +63,7 @@ cat <<'EOF' > domain_security_findings.json
       "severity": "HIGH",
       "category": "Audit Visibility",
       "asset": "Advanced Audit Policy",
-      "evidence": "Advanced Audit Policy is Not Configured",
+      "evidence": "Advanced Audit Policy is Not Configured for Process Creation, Special Logon, Account Management, Object Access, and Sysmon/PowerShell",
       "risk": "Lack of process creation, special logon, and object access logging limits threat detection and incident response capabilities.",
       "recommended_remediation": "Configure Advanced Audit Policy GPO and deploy Sysmon/PowerShell logging.",
       "mapped_task": "Task 3 - Audit & Event Logging"
@@ -72,7 +72,7 @@ cat <<'EOF' > domain_security_findings.json
       "id": "FINDING-007",
       "severity": "HIGH",
       "category": "Privileged Accounts",
-      "asset": "G_IT_Admins / Domain Admins",
+      "asset": "G_IT_Admins / Domain Admins / Enterprise Admins",
       "evidence": "Disabled accounts present in privileged administrator groups",
       "risk": "Disabled administrative accounts can be re-enabled by attackers or exploited if permissions are improperly managed.",
       "recommended_remediation": "Remove disabled accounts from privileged groups.",
