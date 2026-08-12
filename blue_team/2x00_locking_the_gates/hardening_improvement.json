@@ -1,0 +1,23 @@
+{
+  "before_score": 52,
+  "after_score": 84,
+  "delta": 32,
+  "resolved_findings": [
+    "PermitRootLogin enabled",
+    "PasswordAuthentication enabled",
+    "Unused network services active",
+    "UFW firewall disabled"
+  ],
+  "remaining_findings": [
+    "Kernel hardening warnings",
+    "System log retention threshold"
+  ],
+  "new_findings": [
+    "Audit log buffer increased",
+    "Strict umask applied"
+  ],
+  "resolved_count": 41,
+  "remaining_count": 22,
+  "new_count": 4,
+  "residual_risk_summary": "Major systemic and network risks resolved. Remaining findings are low-impact hardening recommendations."
+}

@@ -1,14 +1,2 @@
 #!/bin/bash
-
-encoded="${1#\{xor\}}"
-
-printf '%s' "$encoded" | base64 -d | od -An -t u1 | tr -s ' ' '\n' | while read -r byte
-do
-	if [ -n "$byte" ]
-	then
-		value=$((byte ^ 95))
-		printf "\\$(printf '%03o' "$value")"
-	fi
-done
-
-printf '\n'
+python3 -c "import base64; data=base64.b64decode('${1#\{xor\}}'); key= 0x5F; print(bytes([b ^ key for b in data]).decode())"

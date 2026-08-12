@@ -1,0 +1,9 @@
+{
+  "score": 84,
+  "findings": [
+    "Kernel memory protection missing",
+    "Log martians partially enabled",
+    "Core dumps enabled in soft limit",
+    "Unused filesystem modules loaded"
+  ]
+}
