@@ -1,10 +1,13 @@
 #!/bin/bash
-
+#
 # name: 12-linux_detection_proof.sh
-# purpose: Correlate Linux attack simulation log with captured telemetry to produce detection matrix.
+# Linux Detection Proof (Block 2, Task 12)
 # author: Nargiz Naghiyeva
+# purpose and description: Correlates Task 11 ground truth against captured telemetry (auditd, auth.log, syslog)
 
-set -euo pipefail
+set -e
+set -o pipefail
+set -u
 
 INPUT_DEFAULT="linux_attack_log.json"
 
@@ -22,11 +25,7 @@ if [ ! -f "$INPUT" ]; then
     exit 1
 fi
 
-if [ -f /var/log/auth.log ]; then
-    AUTHLOG=/var/log/auth.log
-else
-    AUTHLOG=/var/log/secure
-fi
+if [ -f /var/log/auth.log ]; then AUTHLOG=/var/log/auth.log; else AUTHLOG=/var/log/secure; fi
 
 HAVE_AUSEARCH=1
 command -v ausearch >/dev/null 2>&1 || { HAVE_AUSEARCH=0; echo "[!] ausearch not found - auditd rows will show as MISSED." >&2; }
@@ -39,7 +38,6 @@ echo "[*] Loading ground truth ($TOTAL actions)..."
 echo "[*] Searching telemetry..."
 
 join_csv() { local IFS=,; echo "$*"; }
-
 print_row() { printf '%-27s%-15s%-17s%-10s[%s]\n' "$1" "$2" "$3" "$4" "$5"; }
 
 probe_auditd() {
@@ -48,9 +46,9 @@ probe_auditd() {
     local out=""
     PRESENT=()
     if [ "$HAVE_AUSEARCH" -eq 1 ]; then
-        out=$(ausearch -k "$skey" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null || true)
+        out=$(ausearch -k "$skey" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null)
         if [ -z "$out" ] && [ "${#FALLBACK[@]}" -gt 0 ]; then
-            out=$(ausearch "${FALLBACK[@]}" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null || true)
+            out=$(ausearch "${FALLBACK[@]}" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null)
         fi
     fi
     if [ -n "$out" ]; then
@@ -59,15 +57,10 @@ probe_auditd() {
             printf '%s' "$out" | grep -qiE "$t" && PRESENT+=("$t")
         done
         if [ "${#PRESENT[@]}" -eq "${#tokens[@]}" ] && [ "${#tokens[@]}" -gt 0 ]; then
-            DETAIL="Full"
-        else
-            DETAIL="Partial"
-        fi
+            DETAIL="Full"; else DETAIL="Partial"; fi
         STATUS="CAPTURED"
     else
-        DETAIL="Missed"
-        STATUS="MISSED"
-        PRESENT=()
+        DETAIL="Missed"; STATUS="MISSED"; PRESENT=()
     fi
 }
 
@@ -78,19 +71,14 @@ probe_log() {
     if [ -f "$file" ]; then
         local t
         for t in "${tokens[@]}"; do
-            grep -qE "$t" "$file" 2>/dev/null && PRESENT+=("$t")
+            grep -qE "$t" "$file" && PRESENT+=("$t")
         done
     fi
     if [ "${#PRESENT[@]}" -gt 0 ]; then
-        if [ "${#PRESENT[@]}" -eq "${#tokens[@]}" ]; then
-            DETAIL="Full"
-        else
-            DETAIL="Partial"
-        fi
+        if [ "${#PRESENT[@]}" -eq "${#tokens[@]}" ]; then DETAIL="Full"; else DETAIL="Partial"; fi
         STATUS="CAPTURED"
     else
-        DETAIL="Missed"
-        STATUS="MISSED"
+        DETAIL="Missed"; STATUS="MISSED"
     fi
 }
 
@@ -104,7 +92,7 @@ make_src_json() {
 }
 
 emit_source() {
-    print_row "$ROWLABEL" "$1" "$2" "$DETAIL" "$STATUS"
+    print_row "$ROWLABEL" "$1" "$2" "$Detail_Disp" "$STATUS"
     ROWLABEL=""
     [ "$STATUS" = "CAPTURED" ] && hits=$((hits+1))
     SRC_LIST+=("$(make_src_json "$1" "$2" "$DETAIL" "$STATUS" "${PRESENT[@]}")")
@@ -121,41 +109,41 @@ for i in "${!NUMS[@]}"; do
     num="${NUMS[$i]}"
     iso="${TIMES[$i]}"
 
-    epoch=$(date -d "$iso" +%s 2>/dev/null || echo 0)
-    SD=$(date -d "@$((epoch-30))" +"%m/%d/%Y" 2>/dev/null || echo "")
-    ST=$(date -d "@$((epoch-30))" +"%H:%M:%S" 2>/dev/null || echo "")
-    ED=$(date -d "@$((epoch+30))" +"%m/%d/%Y" 2>/dev/null || echo "")
-    ET=$(date -d "@$((epoch+30))" +"%H:%M:%S" 2>/dev/null || echo "")
+    epoch=$(date -d "$iso" +%s 2>/dev/null || echo "0")
+    SD=$(date -d "@$((epoch-30))" +"%m/%d/%Y" 2>/dev/null || date +"%m/%d/%Y")
+    ST=$(date -d "@$((epoch-30))" +"%H:%M:%S" 2>/dev/null || date +"%H:%M:%S")
+    ED=$(date -d "@$((epoch+30))" +"%m/%d/%Y" 2>/dev/null || date +"%m/%d/%Y")
+    ET=$(date -d "@$((epoch+30))" +"%H:%M:%S" 2>/dev/null || date +"%H:%M:%S")
 
     hits=0
     SRC_LIST=()
     FALLBACK=()
 
     case "$num" in
-        1)  label="Create user";        ROWLABEL="$label"
+        1)  label="Create user";       ROWLABEL="$label"
             FALLBACK=(-m ADD_USER,USER_MGMT)
-            probe_auditd "identity" "acct" "exe"; emit_source "auditd" "identity"
-            probe_log "$AUTHLOG" "useradd" "testattacker"; emit_source "auth.log" "useradd"
+            probe_auditd "identity" "acct" "exe"; Detail_Disp="$DETAIL"; emit_source "auditd" "identity"
+            probe_log "$AUTHLOG" "useradd" "testattacker"; Detail_Disp="$DETAIL"; emit_source "auth.log" "useradd"
             ;;
         2)  label="Modify sudoers";    ROWLABEL="$label"
             FALLBACK=(-f /etc/sudoers.d/backdoor)
-            probe_auditd "sudoers" "name" "nametype"; emit_source "auditd" "sudoers"
+            probe_auditd "sudoers" "name" "nametype"; Detail_Disp="$DETAIL"; emit_source "auditd" "sudoers"
             ;;
         3)  label="Execute from /tmp"; ROWLABEL="$label"
             FALLBACK=(-f /tmp/suspicious_bin)
-            probe_auditd "process_exec" "exe" "comm"; emit_source "auditd" "process_exec"
+            probe_auditd "process_exec" "exe" "comm"; Detail_Disp="$DETAIL"; emit_source "auditd" "process_exec"
             ;;
         4)  label="Reverse shell";     ROWLABEL="$label"
             FALLBACK=(-sc connect)
-            probe_auditd "network_connect" "saddr"; emit_source "auditd" "network_connect"
+            probe_auditd "network_connect" "saddr"; Detail_Disp="$DETAIL"; emit_source "auditd" "network_connect"
             ;;
         5)  label="Cron persistence";  ROWLABEL="$label"
             FALLBACK=(-f /etc/cron.d/persistence_test)
-            probe_auditd "cron_persist" "name" "nametype"; emit_source "auditd" "cron_persist"
+            probe_auditd "cron_persist" "name" "nametype"; Detail_Disp="$DETAIL"; emit_source "auditd" "cron_persist"
             ;;
         6)  label="Access /etc/shadow"; ROWLABEL="$label"
             FALLBACK=(-f /etc/shadow)
-            probe_auditd "identity" "name"; emit_source "auditd" "identity"
+            probe_auditd "identity" "name"; Detail_Disp="$DETAIL"; emit_source "auditd" "identity"
             ;;
         *)  continue ;;
     esac
@@ -193,4 +181,3 @@ echo "Actions: $TOTAL | Captured: $CAPTURED/$TOTAL (${PCT}%) | Multi-source: $MU
 } > "$OUTPUT"
 
 echo "Report saved to: $(basename "$OUTPUT")"
-

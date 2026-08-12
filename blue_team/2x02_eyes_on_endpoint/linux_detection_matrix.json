@@ -1,0 +1,16 @@
+{
+  "platform": "linux",
+  "generated_at": "2026-08-12T18:24:51Z",
+  "total_actions": 6,
+  "captured": 0,
+  "capture_rate": "0%",
+  "multi_source": 0,
+  "matrix": [
+    {"action_number":1,"action":"Create user","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"identity","detail":"Missed","status":"MISSED","key_fields_present":[]},{"source":"auth.log","audit_key":"useradd","detail":"Missed","status":"MISSED","key_fields_present":[]}]},
+    {"action_number":2,"action":"Modify sudoers","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"sudoers","detail":"Missed","status":"MISSED","key_fields_present":[]}]},
+    {"action_number":3,"action":"Execute from /tmp","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"process_exec","detail":"Missed","status":"MISSED","key_fields_present":[]}]},
+    {"action_number":4,"action":"Reverse shell","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"network_connect","detail":"Missed","status":"MISSED","key_fields_present":[]}]},
+    {"action_number":5,"action":"Cron persistence","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"cron_persist","detail":"Missed","status":"MISSED","key_fields_present":[]}]},
+    {"action_number":6,"action":"Access /etc/shadow","timestamp":"2026-08-12T18:24:40Z","captured":false,"sources":[{"source":"auditd","audit_key":"identity","detail":"Missed","status":"MISSED","key_fields_present":[]}]}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "platform": "linux",
+  "generated_at": "2026-08-12T18:24:40Z",
+  "total_actions": 6,
+  "actions": [
+    { "action_number": 1, "description": "Create user", "timestamp": "2026-08-12T18:24:40Z" },
+    { "action_number": 2, "description": "Modify sudoers", "timestamp": "2026-08-12T18:24:40Z" },
+    { "action_number": 3, "description": "Execute from /tmp", "timestamp": "2026-08-12T18:24:40Z" },
+    { "action_number": 4, "description": "Reverse shell", "timestamp": "2026-08-12T18:24:40Z" },
+    { "action_number": 5, "description": "Cron persistence", "timestamp": "2026-08-12T18:24:40Z" },
+    { "action_number": 6, "description": "Access /etc/shadow", "timestamp": "2026-08-12T18:24:40Z" }
+  ]
+}
