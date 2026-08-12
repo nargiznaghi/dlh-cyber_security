@@ -1,177 +1,140 @@
-# name: 0-sysmon_validation.ps1
-# purpose: Validate Sysmon telemetry event capture across key Event IDs
-# author: Cyber Security Team
+<#
+name: 0-sysmon_validation.ps1
+purpose: Validate Sysmon telemetry by testing important Sysmon Event IDs.
+author: Nargiz Naghiyeva
+#>
 
 Set-StrictMode -Version Latest
 
+$log = "Microsoft-Windows-Sysmon/Operational"
+$passed = 0
+
 Write-Host "[*] Running Sysmon telemetry validation..."
 
-$actionsTested = 0
-$actionsCaptured = 0
-
-function Get-SysmonEvent {
-    param (
-        [int]$EventID,
-        [datetime]$StartTime
-    )
-    
-    Start-Sleep -Seconds 2
-    try {
-        $events = Get-WinEvent -FilterHashtable @{
-            LogName   = 'Microsoft-Windows-Sysmon/Operational'
-            Id        = $EventID
-            StartTime = $StartTime
-        } -ErrorAction Stop
-        return $events
-    }
-    catch {
-        return $null
-    }
-}
-
-# --- Task 1: Process Creation (Event ID 1) ---
+# 1. Process Creation
 Write-Host "    [1/5] Process creation (Event ID 1)..."
-$actionsTested++
-$startTime = Get-Date
-
+$time = Get-Date
 cmd.exe /c whoami | Out-Null
+Start-Sleep 2
 
-$events = Get-SysmonEvent -EventID 1 -StartTime $startTime
-$captured = $false
+$event = Get-WinEvent -FilterHashtable @{
+    LogName=$log
+    Id=1
+    StartTime=$time
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Message -like "*cmd.exe*" -and $_.Message -like "*whoami*"
+} | Select-Object -First 1
 
-if ($events) {
-    foreach ($evt in $events) {
-        $msg = $evt.Message
-        if ($msg -like "*cmd.exe*" -and $msg -like "*whoami*") {
-            $captured = $true
-            break
-        }
-    }
-}
-
-if ($captured) {
-    Write-Host "          cmd.exe /c whoami -> Sysmon EID 1 captured, cmdline present   [PASS]"
-    $actionsCaptured++
+if ($event) {
+    Write-Host "          cmd.exe /c whoami -> Sysmon EID 1 captured, CommandLine present   [PASS]"
+    $passed++
 } else {
-    Write-Host "          cmd.exe /c whoami -> Sysmon EID 1 NOT captured               [FAIL]"
+    Write-Host "          Process creation not captured                               [FAIL]"
 }
 
-# --- Task 2: Network Connection (Event ID 3) ---
+
+# 2. Network Connection
 Write-Host "    [2/5] Network connection (Event ID 3)..."
-$actionsTested++
-$startTime = Get-Date
+$time = Get-Date
+Test-NetConnection 1.1.1.1 -Port 443 -InformationLevel Quiet | Out-Null
+Start-Sleep 2
 
-$null = Test-NetConnection -ComputerName "8.8.8.8" -Port 53 -WarningAction SilentlyContinue
+$event = Get-WinEvent -FilterHashtable @{
+    LogName=$log
+    Id=3
+    StartTime=$time
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Message -like "*1.1.1.1*" -and $_.Message -like "*443*"
+} | Select-Object -First 1
 
-$events = Get-SysmonEvent -EventID 3 -StartTime $startTime
-$captured = $false
-
-if ($events) {
-    foreach ($evt in $events) {
-        $msg = $evt.Message
-        if ($msg -like "*8.8.8.8*" -or $msg -like "*53*") {
-            $captured = $true
-            break
-        }
-    }
-}
-
-if ($captured) {
-    Write-Host "          Outbound TCP -> Sysmon EID 3 captured, dest IP/port present   [PASS]"
-    $actionsCaptured++
+if ($event) {
+    Write-Host "          Outbound TCP -> Sysmon EID 3 captured, DestinationIp / Destination port / DestinationPort present   [PASS]"
+    $passed++
 } else {
-    Write-Host "          Outbound TCP -> Sysmon EID 3 NOT captured                     [FAIL]"
+    Write-Host "          Network connection not captured                               [FAIL]"
 }
 
-# --- Task 3: File Creation (Event ID 11) ---
+
+# 3. File Creation
 Write-Host "    [3/5] File creation (Event ID 11)..."
-$actionsTested++
-$startTime = Get-Date
-$testFilePath = "C:\Windows\Temp\test.txt"
+$file = "C:\Windows\Temp\test.txt"
+$time = Get-Date
+"Sysmon Test" | Out-File $file
+Start-Sleep 2
 
-Set-Content -Path $testFilePath -Value "Sysmon validation test" -Force
+$event = Get-WinEvent -FilterHashtable @{
+    LogName=$log
+    Id=11
+    StartTime=$time
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Message -like "*TargetFilename*" -and
+    $_.Message -like "*$file*"
+} | Select-Object -First 1
 
-$events = Get-SysmonEvent -EventID 11 -StartTime $startTime
-$captured = $false
-
-if ($events) {
-    foreach ($evt in $events) {
-        $msg = $evt.Message
-        if ($msg -like "*C:\Windows\Temp\test.txt*") {
-            $captured = $true
-            break
-        }
-    }
-}
-
-if ($captured) {
+if ($event) {
     Write-Host "          C:\Windows\Temp\test.txt -> Sysmon EID 11 captured            [PASS]"
-    $actionsCaptured++
+    $passed++
 } else {
-    Write-Host "          C:\Windows\Temp\test.txt -> Sysmon EID 11 NOT captured        [FAIL]"
+    Write-Host "          File creation not captured                                   [FAIL]"
 }
 
-# --- Task 4: Registry Modification (Event ID 13) ---
+
+# 4. Registry Modification
 Write-Host "    [4/5] Registry modification (Event ID 13)..."
-$actionsTested++
-$startTime = Get-Date
+$reg = "HKCU:\Software\SysmonTest"
+$timestamp = Get-Date
 
-New-ItemProperty -Path "HKCU:\Software" -Name "SysmonTest" -Value "1" -PropertyType String -Force | Out-Null
+New-Item $reg -Force | Out-Null
+$name = "TestValue"
+Set-ItemProperty $reg -Name $name -Value "Hello"
+Start-Sleep 2
 
-$events = Get-SysmonEvent -EventID 13 -StartTime $startTime
-$captured = $false
+$event = Get-WinEvent -FilterHashtable @{
+    LogName=$log
+    Id=13
+    StartTime=$timestamp
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Message -like "*SysmonTest*" -and $_.Message -like "*TestValue*"
+} | Select-Object -First 1
 
-if ($events) {
-    foreach ($evt in $events) {
-        $msg = $evt.Message
-        if ($msg -like "*SysmonTest*") {
-            $captured = $true
-            break
-        }
-    }
-}
-
-if ($captured) {
+if ($event) {
     Write-Host "          HKCU\...\SysmonTest -> Sysmon EID 13 captured                 [PASS]"
-    $actionsCaptured++
+    $passed++
 } else {
-    Write-Host "          HKCU\...\SysmonTest -> Sysmon EID 13 NOT captured             [FAIL]"
+    Write-Host "          Registry modification not captured                           [FAIL]"
 }
 
-# --- Task 5: DNS Query (Event ID 22) ---
+
+# 5. DNS Query
 Write-Host "    [5/5] DNS query (Event ID 22)..."
-$actionsTested++
-$startTime = Get-Date
+$time = Get-Date
+Resolve-DnsName example.com | Out-Null
+Start-Sleep 2
 
-$null = Resolve-DnsName -Name "example.com" -ErrorAction SilentlyContinue
+$event = Get-WinEvent -FilterHashtable @{
+    LogName=$log
+    Id=22
+    StartTime=$time
+} -ErrorAction SilentlyContinue | Where-Object {
+    $_.Message -like "*example.com*"
+} | Select-Object -First 1
 
-$events = Get-SysmonEvent -EventID 22 -StartTime $startTime
-$captured = $false
-
-if ($events) {
-    foreach ($evt in $events) {
-        $msg = $evt.Message
-        if ($msg -like "*example.com*") {
-            $captured = $true
-            break
-        }
-    }
-}
-
-if ($captured) {
-    Write-Host "          nslookup example.com -> Sysmon EID 22 captured                [PASS]"
-    $actionsCaptured++
+if ($event) {
+    Write-Host "          nslookup example.com -> Sysmon EventID 22 captured                [PASS]"
+    $passed++
 } else {
-    Write-Host "          nslookup example.com -> Sysmon EID 22 NOT captured            [FAIL]"
+    Write-Host "          DNS query not captured                                       [FAIL]"
 }
 
-# --- Cleanup ---
+
+# Cleanup
 Write-Host "[*] Cleanup: removing test artifacts..."
-if (Test-Path -Path $testFilePath) {
-    Remove-Item -Path $testFilePath -Force -ErrorAction SilentlyContinue
-}
-Remove-ItemProperty -Path "HKCU:\Software" -Name "SysmonTest" -Force -ErrorAction SilentlyContinue
 
-$missed = $actionsTested - $actionsCaptured
-Write-Host "Actions tested: $actionsTested | Captured: $actionsCaptured | Missed: $missed"
+Remove-Item $file -Force -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path $reg -Name "TestValue" -ErrorAction SilentlyContinue
+Remove-Item $reg -Recurse -Force -ErrorAction SilentlyContinue
+
+$missed = 5 - $passed
+
+Write-Host "Actions tested: 5 | Captured: $passed | Missed: $missed"
 
