@@ -1,13 +1,9 @@
 #!/bin/bash
-#
 # name: 12-linux_detection_proof.sh
-# Linux Detection Proof (Block 2, Task 12)
+# purpose: Correlates Task 11 ground truth against captured telemetry
 # author: Nargiz Naghiyeva
-# purpose and description: Correlates Task 11 ground truth against captured telemetry (auditd, auth.log, syslog)
 
-set -e
-set -o pipefail
-set -u
+set -euo pipefail
 
 INPUT_DEFAULT="linux_attack_log.json"
 
@@ -46,15 +42,15 @@ probe_auditd() {
     local out=""
     PRESENT=()
     if [ "$HAVE_AUSEARCH" -eq 1 ]; then
-        out=$(ausearch -k "$skey" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null)
+        out=$(ausearch -k "$skey" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null || true)
         if [ -z "$out" ] && [ "${#FALLBACK[@]}" -gt 0 ]; then
-            out=$(ausearch "${FALLBACK[@]}" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null)
+            out=$(ausearch "${FALLBACK[@]}" -ts "$SD" "$ST" -te "$ED" "$ET" -i 2>/dev/null || true)
         fi
     fi
     if [ -n "$out" ]; then
         local t
         for t in "${tokens[@]}"; do
-            printf '%s' "$out" | grep -qiE "$t" && PRESENT+=("$t")
+            printf '%s' "$out" | grep -qiE "$t" && PRESENT+=("$t") || true
         done
         if [ "${#PRESENT[@]}" -eq "${#tokens[@]}" ] && [ "${#tokens[@]}" -gt 0 ]; then
             DETAIL="Full"; else DETAIL="Partial"; fi
@@ -71,7 +67,7 @@ probe_log() {
     if [ -f "$file" ]; then
         local t
         for t in "${tokens[@]}"; do
-            grep -qE "$t" "$file" && PRESENT+=("$t")
+            grep -qE "$t" "$file" && PRESENT+=("$t") || true
         done
     fi
     if [ "${#PRESENT[@]}" -gt 0 ]; then
