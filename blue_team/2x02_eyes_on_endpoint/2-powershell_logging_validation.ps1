@@ -1,6 +1,6 @@
 <#
 name: 2-powershell_logging_validation.ps1
-purpose: Verify PowerShell Script Block Logging, Module Logging, and Transcription capture.
+purpose: Verify PowerShell Script Block Logging, Module Logging, and Transcription.
 author: Nargiz Naghiyeva
 #>
 
@@ -17,7 +17,7 @@ Write-Host "    [1/5] Simple command (Get-Process)..."
 
 $time = Get-Date
 powershell.exe -NoProfile -Command "Get-Process | Out-Null"
-Start-Sleep -Seconds 2
+Start-Sleep 2
 
 $event = Get-WinEvent -FilterHashtable @{
     LogName   = $log
@@ -28,13 +28,12 @@ $event = Get-WinEvent -FilterHashtable @{
 } | Select-Object -First 1
 
 if ($event) {
-    Write-Host '          EID 4104: "Get-Process" captured                     [PASS]'
+    Write-Host '          EID 4104: "Get-Process" captured [CAPTURED: FULL] [PASS]'
     $passed++
 }
 else {
-    Write-Host '          EID 4104: "Get-Process" NOT captured                 [FAIL]'
+    Write-Host "          EID 4104: Get-Process [MISSED] [FAIL]"
 }
-
 
 # 2. Encoded command
 Write-Host "    [2/5] Encoded command..."
@@ -47,31 +46,30 @@ Write-Host "          Input: -enc $encoded"
 
 $time = Get-Date
 powershell.exe -NoProfile -EncodedCommand $encoded | Out-Null
-Start-Sleep -Seconds 2
+Start-Sleep 2
 
 $event = Get-WinEvent -FilterHashtable @{
     LogName   = $log
     Id        = 4104
     StartTime = $time
 } -ErrorAction SilentlyContinue | Where-Object {
-    $_.Message -like '*Write-Host "Test"*' -or $_.Message -like "*Write-Host 'Test'*"
+    $_.Message -like '*Write-Host "Test"*'
 } | Select-Object -First 1
 
 if ($event) {
-    Write-Host "          EID 4104: `"Write-Host 'Test'`" (decoded) captured     [PASS]"
+    Write-Host '          EID 4104: "Write-Host Test" decoded [CAPTURED: FULL] [PASS]'
     $passed++
 }
 else {
-    Write-Host "          EID 4104: Decoded content NOT captured               [FAIL]"
+    Write-Host "          EID 4104: Decoded content [MISSED] [FAIL]"
 }
-
 
 # 3. Module Logging
 Write-Host "    [3/5] Module import..."
 
 $time = Get-Date
 powershell.exe -NoProfile -Command "Import-Module ActiveDirectory" 2>$null
-Start-Sleep -Seconds 2
+Start-Sleep 2
 
 $event = Get-WinEvent -FilterHashtable @{
     LogName   = $log
@@ -82,16 +80,15 @@ $event = Get-WinEvent -FilterHashtable @{
 } | Select-Object -First 1
 
 if ($event) {
-    Write-Host '          EID 4103: "Import-Module ActiveDirectory" captured   [PASS]'
+    Write-Host '          EID 4103: "Import-Module ActiveDirectory" [CAPTURED: FULL] [PASS]'
     $passed++
 }
 else {
-    Write-Host '          EID 4103: Module import NOT captured                 [FAIL]'
+    Write-Host "          EID 4103: Module import [MISSED] [FAIL]"
 }
 
-
 # 4. Multi-line script block
-Write-Host "    [4/5] Multi-line script block..."
+Write-Host "    [4/5] Multi-line ScriptBlock..."
 
 $multiLine = @'
 Write-Output "PSLOG_LINE_01"
@@ -110,45 +107,45 @@ Write-Output "PSLOG_LINE_12"
 
 $time = Get-Date
 powershell.exe -NoProfile -Command $multiLine | Out-Null
-Start-Sleep -Seconds 2
+Start-Sleep 2
 
 $event = Get-WinEvent -FilterHashtable @{
     LogName   = $log
     Id        = 4104
     StartTime = $time
 } -ErrorAction SilentlyContinue | Where-Object {
-    $_.Message -like "*PSLOG_LINE_01*" -and $_.Message -like "*PSLOG_LINE_12*"
+    $_.Message -like "*PSLOG_LINE_01*" -and
+    $_.Message -like "*PSLOG_LINE_12*"
 } | Select-Object -First 1
 
 if ($event) {
-    Write-Host "          EID 4104: Full block captured (12 lines)             [PASS]"
+    Write-Host "          EID 4104: Full block captured (12 lines) [CAPTURED: FULL] [PASS]"
     $passed++
 }
 else {
-    Write-Host "          EID 4104: Full block NOT captured                    [FAIL]"
+    Write-Host "          EID 4104: Full block not found [MISSED/PARTIAL] [FAIL]"
 }
-
 
 # 5. Transcription
 Write-Host "    [5/5] Transcription file..."
 
 $time = Get-Date
 powershell.exe -NoProfile -Command "Write-Output 'TranscriptTest'" | Out-Null
-Start-Sleep -Seconds 2
+Start-Sleep 2
 
-$transcript = Get-ChildItem $transcriptPath -Filter "*.txt" -File -Recurse -ErrorAction SilentlyContinue | Where-Object {
-    $_.LastWriteTime -ge $time
-} | Select-Object -First 1
+$transcript = Get-ChildItem $transcriptPath -Filter "*.txt" -File -Recurse `
+    -ErrorAction SilentlyContinue | Where-Object {
+        $_.LastWriteTime -ge $time
+    } | Select-Object -First 1
 
 if ($transcript) {
-    Write-Host "          C:\PSTranscripts\*.txt exists, session recorded      [PASS]"
+    Write-Host "          C:\PSTranscripts\*.txt exists [CAPTURED: FULL] [PASS]"
     $passed++
 }
 else {
-    Write-Host "          C:\PSTranscripts\*.txt NOT found                     [FAIL]"
+    Write-Host "          Transcription file [MISSED] [FAIL]"
 }
 
 $missed = 5 - $passed
 
 Write-Host "Tests: 5 | Captured: $passed | Missed: $missed"
-
