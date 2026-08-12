@@ -1,6 +1,6 @@
-# Name: 0-sysmon_validation.ps1
-# Purpose: Validate Sysmon telemetry event capture across key Event IDs
-# Author: Cyber Security Team
+# name: 0-sysmon_validation.ps1
+# purpose: Validate Sysmon telemetry event capture across key Event IDs
+# author: Cyber Security Team
 
 Set-StrictMode -Version Latest
 
@@ -9,7 +9,6 @@ Write-Host "[*] Running Sysmon telemetry validation..."
 $actionsTested = 0
 $actionsCaptured = 0
 
-# Helper function to query Sysmon event log
 function Get-SysmonEvent {
     param (
         [int]$EventID,
@@ -31,7 +30,7 @@ function Get-SysmonEvent {
 }
 
 # --- Task 1: Process Creation (Event ID 1) ---
-Write-Host "    [1/5] Process creation (Event ID 1)..." -NoNewline
+Write-Host "    [1/5] Process creation (Event ID 1)..."
 $actionsTested++
 $startTime = Get-Date
 
@@ -51,14 +50,14 @@ if ($events) {
 }
 
 if ($captured) {
-    Write-Host "`n          cmd.exe /c whoami -> Sysmon EID 1 captured, cmdline present   [PASS]"
+    Write-Host "          cmd.exe /c whoami -> Sysmon EID 1 captured, cmdline present   [PASS]"
     $actionsCaptured++
 } else {
-    Write-Host "`n          cmd.exe /c whoami -> Sysmon EID 1 NOT captured               [FAIL]"
+    Write-Host "          cmd.exe /c whoami -> Sysmon EID 1 NOT captured               [FAIL]"
 }
 
 # --- Task 2: Network Connection (Event ID 3) ---
-Write-Host "    [2/5] Network connection (Event ID 3)..." -NoNewline
+Write-Host "    [2/5] Network connection (Event ID 3)..."
 $actionsTested++
 $startTime = Get-Date
 
@@ -78,14 +77,14 @@ if ($events) {
 }
 
 if ($captured) {
-    Write-Host "`n          Outbound TCP -> Sysmon EID 3 captured, dest IP/port present   [PASS]"
+    Write-Host "          Outbound TCP -> Sysmon EID 3 captured, dest IP/port present   [PASS]"
     $actionsCaptured++
 } else {
-    Write-Host "`n          Outbound TCP -> Sysmon EID 3 NOT captured                     [FAIL]"
+    Write-Host "          Outbound TCP -> Sysmon EID 3 NOT captured                     [FAIL]"
 }
 
 # --- Task 3: File Creation (Event ID 11) ---
-Write-Host "    [3/5] File creation (Event ID 11)..." -NoNewline
+Write-Host "    [3/5] File creation (Event ID 11)..."
 $actionsTested++
 $startTime = Get-Date
 $testFilePath = "C:\Windows\Temp\test.txt"
@@ -106,14 +105,14 @@ if ($events) {
 }
 
 if ($captured) {
-    Write-Host "`n          C:\Windows\Temp\test.txt -> Sysmon EID 11 captured            [PASS]"
+    Write-Host "          C:\Windows\Temp\test.txt -> Sysmon EID 11 captured            [PASS]"
     $actionsCaptured++
 } else {
-    Write-Host "`n          C:\Windows\Temp\test.txt -> Sysmon EID 11 NOT captured        [FAIL]"
+    Write-Host "          C:\Windows\Temp\test.txt -> Sysmon EID 11 NOT captured        [FAIL]"
 }
 
 # --- Task 4: Registry Modification (Event ID 13) ---
-Write-Host "    [4/5] Registry modification (Event ID 13)..." -NoNewline
+Write-Host "    [4/5] Registry modification (Event ID 13)..."
 $actionsTested++
 $startTime = Get-Date
 
@@ -133,14 +132,14 @@ if ($events) {
 }
 
 if ($captured) {
-    Write-Host "`n          HKCU\...\SysmonTest -> Sysmon EID 13 captured                 [PASS]"
+    Write-Host "          HKCU\...\SysmonTest -> Sysmon EID 13 captured                 [PASS]"
     $actionsCaptured++
 } else {
-    Write-Host "`n          HKCU\...\SysmonTest -> Sysmon EID 13 NOT captured             [FAIL]"
+    Write-Host "          HKCU\...\SysmonTest -> Sysmon EID 13 NOT captured             [FAIL]"
 }
 
 # --- Task 5: DNS Query (Event ID 22) ---
-Write-Host "    [5/5] DNS query (Event ID 22)..." -NoNewline
+Write-Host "    [5/5] DNS query (Event ID 22)..."
 $actionsTested++
 $startTime = Get-Date
 
@@ -160,10 +159,10 @@ if ($events) {
 }
 
 if ($captured) {
-    Write-Host "`n          nslookup example.com -> Sysmon EID 22 captured                [PASS]"
+    Write-Host "          nslookup example.com -> Sysmon EID 22 captured                [PASS]"
     $actionsCaptured++
 } else {
-    Write-Host "`n          nslookup example.com -> Sysmon EID 22 NOT captured            [FAIL]"
+    Write-Host "          nslookup example.com -> Sysmon EID 22 NOT captured            [FAIL]"
 }
 
 # --- Cleanup ---
@@ -175,3 +174,4 @@ Remove-ItemProperty -Path "HKCU:\Software" -Name "SysmonTest" -Force -ErrorActio
 
 $missed = $actionsTested - $actionsCaptured
 Write-Host "Actions tested: $actionsTested | Captured: $actionsCaptured | Missed: $missed"
+
