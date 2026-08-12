@@ -4,9 +4,7 @@
 # purpose: Correlate Linux attack simulation log with captured telemetry to produce detection matrix.
 # author: Nargiz Naghiyeva
 
-set -e
-set -u
-set -o pipefail
+set -euo pipefail
 
 INPUT_DEFAULT="linux_attack_log.json"
 
