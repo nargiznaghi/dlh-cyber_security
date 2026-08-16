@@ -38,7 +38,7 @@ The curriculum follows a progressive learning path through ten modules across tw
 
 All learning objectives, cheat sheets, frameworks, and reference materials are systematically maintained in the Study Hub:
 
-🔗 **[Access the Defensive Security Study Hub](https://github.com/nargiznaghi/dlh-cyber_security)**
+🔗 🔗 **[Access the Defensive Security Study Hub](https://nishtman-k.github.io/cyber-study-hub/?tab=defensive)**
 
 > 📌 **Maintainer Note:** The **Defensive Security** section within the Study Hub is managed and regularly updated by **[@nargiznaghi](https://github.com/nargiznaghi)**.
 
