@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+pid=$(pgrep -f 7-highlander)
+echo 15 > "/proc/$pid/kill"
