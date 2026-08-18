@@ -1,0 +1,25 @@
+{
+  "timezone": "UTC",
+  "windows": [
+    {
+      "name": "standard-weekly",
+      "type": "standard",
+      "days": ["Sat"],
+      "start": "02:00",
+      "end": "06:00"
+    },
+    {
+      "name": "extended-monthly",
+      "type": "extended",
+      "days": ["Sat"],
+      "week_of_month": 1,
+      "start": "00:00",
+      "end": "08:00"
+    },
+    {
+      "name": "emergency-bypass",
+      "type": "emergency",
+      "always": true
+    }
+  ]
+}
