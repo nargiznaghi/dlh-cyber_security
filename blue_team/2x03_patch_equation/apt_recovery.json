@@ -1,0 +1,59 @@
+{
+  "initial_diagnosis": {
+    "live_processes": "none",
+    "stale_locks": "/var/lib/dpkg/lock-frontend, /var/lib/dpkg/lock, /var/cache/apt/archives/lock",
+    "dpkg_audit": "clean",
+    "broken_packages": "none",
+    "broken_count": 0,
+    "free_space": [
+      {
+        "mountpoint": "/",
+        "available_mb": 11009
+      },
+      {
+        "mountpoint": "/var",
+        "available_mb": 11009
+      }
+    ]
+  },
+  "actions_taken": [
+    {
+      "step": 1,
+      "action": "remove stale locks",
+      "result": "OK",
+      "locks": [
+        {
+          "file": "/var/lib/dpkg/lock-frontend",
+          "action": "removed"
+        },
+        {
+          "file": "/var/lib/dpkg/lock",
+          "action": "removed"
+        },
+        {
+          "file": "/var/cache/apt/archives/lock",
+          "action": "removed"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "action": "dpkg --configure -a",
+      "result": "OK"
+    },
+    {
+      "step": 3,
+      "action": "apt-get --fix-broken install",
+      "result": "OK"
+    },
+    {
+      "step": 4,
+      "action": "dpkg --audit (re-run)",
+      "result": "clean"
+    }
+  ],
+  "final_state": "clean",
+  "recovered": true,
+  "duration_seconds": 1,
+  "service_restarts": []
+}
