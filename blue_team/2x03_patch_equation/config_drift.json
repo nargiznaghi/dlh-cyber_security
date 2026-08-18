@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "total": 2,
+    "unchanged": 0,
+    "modified": 2,
+    "missing": 0,
+    "new": 0,
+    "expected_drift": 2,
+    "unexpected_drift": 0
+  },
+  "files": [
+    {
+      "path": "/etc/ssh/sshd_config",
+      "owning_package": "openssh-server",
+      "classification": "modified",
+      "expected": true,
+      "pre_hash": "a1b2c3d4...",
+      "current_hash": "e5f6g7h8...",
+      "diff": "--- /etc/ssh/sshd_config.dpkg-dist ...\n+++ /etc/ssh/sshd_config ..."
+    },
+    {
+      "path": "/etc/ssl/openssl.cnf",
+      "owning_package": "openssl",
+      "classification": "modified",
+      "expected": true,
+      "pre_hash": "12345678...",
+      "current_hash": "87654321...",
+      "diff": "--- /etc/ssl/openssl.cnf.dpkg-dist ...\n+++ /etc/ssl/openssl.cnf ..."
+    }
+  ]
+}
