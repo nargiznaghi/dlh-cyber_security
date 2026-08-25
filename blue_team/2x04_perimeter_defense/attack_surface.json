@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-08-25T14:19:23-05:00",
+  "hostname": "kali",
+  "sockets": [
+    {
+      "proto": "tcp",
+      "port": 22,
+      "bind_addr": "0.0.0.0",
+      "process": "sshd",
+      "package": "openssh-server",
+      "function": "unknown",
+      "criticality": "low",
+      "exposure_flags": []
+    },
+    {
+      "proto": "tcp",
+      "port": 22,
+      "bind_addr": "[::]",
+      "process": "sshd",
+      "package": "openssh-server",
+      "function": "unknown",
+      "criticality": "low",
+      "exposure_flags": []
+    }
+  ],
+  "summary": {
+    "total_sockets": 2,
+    "flagged_sockets": 0,
+    "unknown_functions": 2,
+    "critical_count": 0,
+    "high_count": 0,
+    "medium_count": 0,
+    "low_count": 2
+  }
+}
