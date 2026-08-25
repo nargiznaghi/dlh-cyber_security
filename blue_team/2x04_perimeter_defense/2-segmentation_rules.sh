@@ -1,0 +1,217 @@
+#!/bin/bash
+
+OUTPUT_FILE="segmentation_rules.json"
+
+ZONES=$(jq -n '[
+    {
+        name: "DMZ",
+        cidr: "10.0.1.0/24",
+        purpose: "Public-facing services",
+        default_inbound: "drop",
+        default_outbound: "accept_restricted"
+    },
+    {
+        name: "INTERNAL",
+        cidr: "10.0.2.0/24",
+        purpose: "Clinical applications and databases",
+        default_inbound: "drop",
+        default_outbound: "accept_restricted"
+    },
+    {
+        name: "MGMT",
+        cidr: "10.0.3.0/24",
+        purpose: "Administration and management",
+        default_inbound: "drop",
+        default_outbound: "accept_restricted"
+    },
+    {
+        name: "MEDDEV",
+        cidr: "10.0.4.0/24",
+        purpose: "Medical device VLAN",
+        default_inbound: "drop",
+        default_outbound: "drop"
+    }
+]')
+
+FLOWS=$(jq -n '[
+    {
+        src_zone: "MGMT",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 22,
+        action: "allow",
+        justification: "Administration access to INTERNAL servers"
+    },
+    {
+        src_zone: "MGMT",
+        dst_zone: "DMZ",
+        proto: "tcp",
+        dport: 22,
+        action: "allow",
+        justification: "Administration access to DMZ servers"
+    },
+    {
+        src_zone: "MGMT",
+        dst_zone: "MEDDEV",
+        proto: "tcp",
+        dport: 22,
+        action: "allow",
+        justification: "Administration access to medical devices"
+    },
+    {
+        src_zone: "MGMT",
+        dst_zone: "MEDDEV",
+        proto: "tcp",
+        dport: 4242,
+        action: "allow",
+        justification: "DICOM management to medical devices"
+    },
+    {
+        src_zone: "INTERNAL",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 443,
+        action: "allow",
+        justification: "Clinical workstations to INTERNAL server hosts"
+    },
+    {
+        src_zone: "INTERNAL",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 3306,
+        action: "allow",
+        justification: "Clinical workstations to INTERNAL database servers"
+    },
+    {
+        src_zone: "DMZ",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 3306,
+        action: "allow",
+        justification: "Named DMZ application hosts to INTERNAL databases",
+        exception_for: "dmz_app_hosts_only"
+    },
+    {
+        src_zone: "MEDDEV",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 4242,
+        action: "allow",
+        justification: "DICOM imaging to PACS"
+    },
+    {
+        src_zone: "MEDDEV",
+        dst_zone: "INTERNAL",
+        proto: "tcp",
+        dport: 443,
+        action: "allow",
+        justification: "EHR web integration for device display"
+    },
+    {
+        src_zone: "DMZ",
+        dst_zone: "MGMT",
+        proto: "udp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "DMZ",
+        dst_zone: "MGMT",
+        proto: "tcp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "INTERNAL",
+        dst_zone: "MGMT",
+        proto: "udp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "INTERNAL",
+        dst_zone: "MGMT",
+        proto: "tcp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "MEDDEV",
+        dst_zone: "MGMT",
+        proto: "udp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "MEDDEV",
+        dst_zone: "MGMT",
+        proto: "tcp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "MGMT",
+        dst_zone: "MGMT",
+        proto: "udp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "MGMT",
+        dst_zone: "MGMT",
+        proto: "tcp",
+        dport: 53,
+        action: "allow",
+        justification: "DNS resolution"
+    },
+    {
+        src_zone: "MEDDEV",
+        dst_zone: "DMZ",
+        proto: "any",
+        dport: 0,
+        action: "deny_all",
+        justification: "Explicit block on MEDDEV to DMZ traffic"
+    },
+    {
+        src_zone: "DMZ",
+        dst_zone: "MEDDEV",
+        proto: "any",
+        dport: 0,
+        action: "deny_all",
+        justification: "Explicit block into MEDDEV from DMZ"
+    },
+    {
+        src_zone: "INTERNAL",
+        dst_zone: "MEDDEV",
+        proto: "any",
+        dport: 0,
+        action: "deny_all",
+        justification: "Explicit block into MEDDEV from INTERNAL"
+    }
+]')
+
+SUMMARY=$(echo "$FLOWS" | jq '{
+    flow_count: length,
+    allow_count: ([.[] | select(.action == "allow")] | length),
+    deny_count: ([.[] | select(.action == "deny_all")] | length),
+    cross_zone_pairs: ([ .[] | select(.src_zone != .dst_zone) | (.src_zone + "->" + .dst_zone) ] | unique | length)
+}')
+
+jq -n \
+    --argjson zones "$ZONES" \
+    --argjson flows "$FLOWS" \
+    --argjson summary "$SUMMARY" \
+    '{
+        zones: $zones,
+        flows: $flows,
+        summary: $summary
+    }' > "$OUTPUT_FILE"
+
+echo "Segmentation rules generated saved to $OUTPUT_FILE"
