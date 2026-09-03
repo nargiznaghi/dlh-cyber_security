@@ -1,8 +1,6 @@
-#!/usr/bin/env bash
-#
+#!/bin/bash
 # Script Name: 2-target_state.sh
 # Description: Generates target_state.json for harden/audit benchmark validation.
-#
 
 set -euo pipefail
 
@@ -72,7 +70,7 @@ fi
 log_info "Generating '${TARGET_FILE}'..."
 
 # Write JSON output
-cat << 'EOF' > "$TARGET_FILE"
+cat << 'JSON_EOF' > "$TARGET_FILE"
 {
   "schema_version": "1.0",
   "record_type": "target_state",
@@ -186,7 +184,7 @@ cat << 'EOF' > "$TARGET_FILE"
     }
   ]
 }
-EOF
+JSON_EOF
 
 log_info "Target state file written successfully to '${TARGET_FILE}'."
 
