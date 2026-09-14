@@ -1,0 +1,27 @@
+title: SSH Repeated Authentication Failures from Single Source
+id: 5a2d8e3f-7b1c-4f9e-a82d-1c3e5b7f9a2b
+status: experimental
+description: |
+  Detects five or more SSH authentication failures originating from the same source IP within a 120-second window on Linux hosts.
+  Data source: Linux auth logs (canonical_label: login_failure).
+  Operational response: Identify the source IP, check for subsequent successful logins from the same IP, and temporarily block traffic at the firewall if unauthorized.
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+author: MedDefense SOC Engineering
+date: 2026/09/14
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    canonical_label: login_failure
+    event_category: authentication
+  timeframe: 120s
+  condition: selection | count(src_ip) > 5
+falsepositives:
+  - Automated administrative scripts or configuration management tools with expired credentials
+  - Legitimate users misconfiguring auto-reconnect SSH sessions or repeatedly typing wrong passwords
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110.001
