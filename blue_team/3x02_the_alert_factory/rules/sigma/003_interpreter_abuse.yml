@@ -1,0 +1,33 @@
+title: Suspicious Interpreter Execution from Non-Standard Parent
+id: 3c9b1e84-82a1-4f9e-9b2d-1a2b3c4d5e6f
+status: experimental
+description: Detects execution of interpreters (powershell, cmd, wscript, cscript, mshta) when parent process is not a standard shell or expected admin binary.
+references:
+  - https://attack.mitre.org/techniques/T1059/
+author: Blue Team
+date: 2026/09/14
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_interpreters:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\cmd.exe'
+      - '\wscript.exe'
+      - '\cscript.exe'
+      - '\mshta.exe'
+  filter_parents:
+    ParentImage|endswith:
+      - '\explorer.exe'
+      - '\cmd.exe'
+      - '\powershell.exe'
+  condition: selection_interpreters and not filter_parents
+falsepositives:
+  - Legitimate MedDefense administrative script maintenance
+  - Scheduled system maintenance tasks executed via non-standard wrappers
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+  - attack.t1059.003
