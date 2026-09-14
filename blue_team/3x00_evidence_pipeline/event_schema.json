@@ -1,0 +1,150 @@
+{
+  "version": "1.0.0",
+  "author": "Student",
+  "fields": [
+    {
+      "name": "timestamp",
+      "type": "timestamp",
+      "required": true,
+      "description": "Normalized ISO-8601 UTC timestamp indicating when the event occurred.",
+      "justification": "Essential for 3x02 time-window correlation rules and 3x03 timeline reconstruction during incident triage.",
+      "source_mapping": {
+        "windows_json": "timestamp_raw",
+        "linux_text": "timestamp_raw",
+        "network_csv": "timestamp"
+      }
+    },
+    {
+      "name": "hostname",
+      "type": "string",
+      "required": true,
+      "description": "Fully qualified domain name or netbios name of the host generating the event.",
+      "justification": "Required by 3x03 analysts to isolate affected endpoints and track lateral movement across machines.",
+      "source_mapping": {
+        "windows_json": "hostname",
+        "linux_text": "hostname",
+        "network_csv": "host"
+      }
+    },
+    {
+      "name": "source_type",
+      "type": "string",
+      "required": true,
+      "description": "Specific log collector or technology origin such as sysmon, security, auditd, or zeek.",
+      "justification": "Allows 3x02 detection rules to apply parser logic specific to underlying log generation capabilities.",
+      "source_mapping": {
+        "windows_json": "provider / channel",
+        "linux_text": "program / audit_type",
+        "network_csv": "source_type"
+      }
+    },
+    {
+      "name": "event_category",
+      "type": "string",
+      "required": true,
+      "description": "High-level category of the event such as authentication, process, file, network, or audit.",
+      "justification": "Needed by 3x02 detection rules and 3x03 triage filters to group events independently of source vendor.",
+      "source_mapping": {
+        "windows_json": "channel + event_id mapping table",
+        "linux_text": "program or audit_type mapping table",
+        "network_csv": "constant: network"
+      }
+    },
+    {
+      "name": "severity",
+      "type": "string",
+      "required": true,
+      "description": "Normalized criticality level of the event mapped to low, medium, high, or critical.",
+      "justification": "Enables 3x03 triage queues to prioritize high-risk security alerts over routine operational noise.",
+      "source_mapping": {
+        "windows_json": "derived from event_id",
+        "linux_text": "derived from syslog priority / audit type",
+        "network_csv": "derived from threat intelligence / alert level"
+      }
+    },
+    {
+      "name": "user",
+      "type": "string",
+      "required": false,
+      "description": "Account name or user identity associated with the event execution.",
+      "justification": "Critical for 3x02 compromise detection rules focusing on privilege escalation and unauthorized account activity.",
+      "source_mapping": {
+        "windows_json": "event_data.TargetUserName or event_data.SubjectUserName",
+        "linux_text": "user field from syslog/auditd",
+        "network_csv": "user"
+      }
+    },
+    {
+      "name": "process_name",
+      "type": "string",
+      "required": false,
+      "description": "Name or full executable path of the process initiating the action.",
+      "justification": "Used by 3x02 rules to detect malicious execution signatures and living-off-the-land binary abuse.",
+      "source_mapping": {
+        "windows_json": "event_data.Image or event_data.NewProcessName",
+        "linux_text": "parsed_fields.comm or parsed_fields.exe",
+        "network_csv": null
+      }
+    },
+    {
+      "name": "src_ip",
+      "type": "string",
+      "required": false,
+      "description": "Source IPv4 or IPv6 address originating the network communication.",
+      "justification": "Required for 3x03 analysts to identify external attackers or compromised internal originators.",
+      "source_mapping": {
+        "windows_json": "event_data.IpAddress",
+        "linux_text": "parsed_fields.rhost or parsed_fields.addr",
+        "network_csv": "src_ip"
+      }
+    },
+    {
+      "name": "dst_ip",
+      "type": "string",
+      "required": false,
+      "description": "Destination IPv4 or IPv6 address receiving the network communication.",
+      "justification": "Enables 3x02 command-and-control detection rules by matching destinations against threat intelligence feeds.",
+      "source_mapping": {
+        "windows_json": "event_data.DestinationIp",
+        "linux_text": "parsed_fields.dst",
+        "network_csv": "dst_ip"
+      }
+    },
+    {
+      "name": "raw_message",
+      "type": "string",
+      "required": true,
+      "description": "Unmodified original log entry or event payload prior to normalization.",
+      "justification": "Provides 3x03 forensic analysts an uncorrupted audit trail to verify edge cases during investigation.",
+      "source_mapping": {
+        "windows_json": "raw_message",
+        "linux_text": "raw_message",
+        "network_csv": "raw_message"
+      }
+    },
+    {
+      "name": "command_line",
+      "type": "string",
+      "required": false,
+      "description": "Full command-line arguments executed by the process.",
+      "justification": "Essential for 3x02 detection rules to identify obfuscated PowerShell or malicious script execution.",
+      "source_mapping": {
+        "windows_json": "event_data.CommandLine",
+        "linux_text": "parsed_fields.cmd",
+        "network_csv": null
+      }
+    },
+    {
+      "name": "process_id",
+      "type": "integer",
+      "required": false,
+      "description": "Numeric process identifier assigned by the operating system.",
+      "justification": "Allows 3x03 analysts to trace parent-child process trees during endpoint incident response.",
+      "source_mapping": {
+        "windows_json": "event_data.ProcessId",
+        "linux_text": "pid",
+        "network_csv": null
+      }
+    }
+  ]
+}
