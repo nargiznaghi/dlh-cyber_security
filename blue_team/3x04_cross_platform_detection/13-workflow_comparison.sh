@@ -8,6 +8,7 @@ OUT="$OUT_DIR/workflow_comparison.json"
 
 mkdir -p "$OUT_DIR"
 
+# 1. Resolve finding file paths safely
 get_finding() {
     local scenario="$1"
     local iface="$2"
@@ -20,24 +21,19 @@ get_finding() {
     fi
 }
 
-FILES=(
-    $(get_finding "anchor" "cli")
-    $(get_finding "anchor" "export")
-    $(get_finding "scenario_a" "cli")
-    $(get_finding "scenario_a" "export")
-    $(get_finding "scenario_b" "cli")
-    $(get_finding "scenario_b" "export")
-    $(get_finding "scenario_c" "cli")
-    $(get_finding "scenario_c" "export")
-)
-
-for file in "${FILES[@]}"; do
-    if [ -z "$file" ] || [ ! -s "$file" ]; then
-        echo "ERROR: missing finding JSON file" >&2
-        exit 1
-    fi
+FILES=()
+for scenario in anchor scenario_a scenario_b scenario_c; do
+    for iface in cli export; do
+        filepath=$(get_finding "$scenario" "$iface")
+        if [ -z "$filepath" ] || [ ! -s "$filepath" ]; then
+            echo "ERROR: missing finding JSON file for ${scenario} (${iface})" >&2
+            exit 1
+        fi
+        FILES+=("$filepath")
+    done
 done
 
+# 2. Process with JQ (matching both 'export' and 'wazuh_export' interface values)
 jq -s '
     def median:
         sort as $a |
@@ -49,8 +45,12 @@ jq -s '
             (($a[$n/2 - 1] + $a[$n/2]) / 2)
         end;
 
-    def interface_stats($name):
-        [.[] | select(.interface == $name)] as $x |
+    # Normalize interface name check
+    def is_cli: .interface == "cli";
+    def is_export: .interface == "wazuh_export" or .interface == "export";
+
+    def interface_stats($type):
+        [.[] | select(if $type == "cli" then is_cli else is_export end)] as $x |
         {
             finding_count: ($x | length),
             time_to_first_answer_seconds: {
@@ -73,8 +73,8 @@ jq -s '
         };
 
     def scenario($id):
-        ([.[] | select(.scenario_id == $id and .interface == "cli")][0]) as $c |
-        ([.[] | select(.scenario_id == $id and .interface == "wazuh_export")][0]) as $w |
+        ([.[] | select(.scenario_id == $id and is_cli)][0]) as $c |
+        ([.[] | select(.scenario_id == $id and is_export)][0]) as $w |
         {
             scenario_id: $id,
             cli_seconds: $c.time_to_first_answer_seconds,
@@ -97,21 +97,21 @@ jq -s '
         ],
         confidence_distribution: {
             cli: {
-                low: ([.[] | select(.interface=="cli" and .confidence=="low")] | length),
-                medium: ([.[] | select(.interface=="cli" and .confidence=="medium")] | length),
-                high: ([.[] | select(.interface=="cli" and .confidence=="high")] | length)
+                low: ([.[] | select(is_cli and .confidence=="low")] | length),
+                medium: ([.[] | select(is_cli and .confidence=="medium")] | length),
+                high: ([.[] | select(is_cli and .confidence=="high")] | length)
             },
             wazuh_export: {
-                low: ([.[] | select(.interface=="wazuh_export" and .confidence=="low")] | length),
-                medium: ([.[] | select(.interface=="wazuh_export" and .confidence=="medium")] | length),
-                high: ([.[] | select(.interface=="wazuh_export" and .confidence=="high")] | length)
+                low: ([.[] | select(is_export and .confidence=="low")] | length),
+                medium: ([.[] | select(is_export and .confidence=="medium")] | length),
+                high: ([.[] | select(is_export and .confidence=="high")] | length)
             }
         },
         generated_at: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     }
 ' "${FILES[@]}" > "$OUT"
 
-# Formatting exact Expected Output
+# 3. Print Expected Terminal Summary
 echo "findings loaded       : 8 (4 cli + 4 wazuh_export)"
 echo "per interface totals:"
 
@@ -140,23 +140,18 @@ printf '  %-12s: high=%s medium=%s low=%s\n' "wazuh_export" "$EXP_H" "$EXP_M" "$
 
 echo "per scenario deltas (wazuh_export - cli):"
 
-jq -r '
-    .per_scenario[] |
-    if .delta_wazuh_export_minus_cli < 0 then
-        "  \(.scenario_id | rpad(10)): \(.delta_wazuh_export_minus_cli)s (wazuh_export faster)"
-    elif .delta_wazuh_export_minus_cli > 0 then
-        "  \(.scenario_id | rpad(10)): +\(.delta_wazuh_export_minus_cli)s (cli faster)"
+jq -c '.per_scenario[]' "$OUT" | while read -r item; do
+    id=$(echo "$item" | jq -r '.scenario_id')
+    delta=$(echo "$item" | jq -r '.delta_wazuh_export_minus_cli')
+    
+    if [ "$delta" -lt 0 ]; then
+        printf '  %-10s: %ss (wazuh_export faster)\n' "$id" "$delta"
+    elif [ "$delta" -gt 0 ]; then
+        printf '  %-10s: +%ss (cli faster)\n' "$id" "$delta"
     else
-        "  \(.scenario_id | rpad(10)): 0s (tie)"
-    end
-' "$OUT" 2>/dev/null || jq -r '
-    .per_scenario[] |
-    .scenario_id as $id |
-    .delta_wazuh_export_minus_cli as $d |
-    (if $d < 0 then "\($d)s (wazuh_export faster)" elif $d > 0 then "+\($d)s (cli faster)" else "0s (tie)" end) as $str |
-    "  \($id)      : \($str)"
-' "$OUT" | sed 's/  \(anchor\|scenario_a\|scenario_b\|scenario_c\)  */  \1      : /' | awk -F':' '{printf "  %-10s: %s\n", $1, $2}' | sed 's/  \(.*\)      :/  \1:/'
+        printf '  %-10s: 0s (tie)\n' "$id"
+    fi
+done
 
 echo "$OUT written"
-
 exit 0
