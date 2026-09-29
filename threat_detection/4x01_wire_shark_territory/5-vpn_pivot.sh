@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 PCAP_FILE="${1:-full_timeline.pcap}"
 
