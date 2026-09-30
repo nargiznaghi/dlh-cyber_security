@@ -37,7 +37,7 @@ To evaluate intelligence sources objectively and mitigate cognitive bias, this a
 - **Timeliness**: **High** (Published shortly after active sector campaign detection)
 - **Relevance to MedDefense**: **High** (Directly targets the healthcare sector and outlines active campaigns)
 - **Limitations**: Aggregated at sector level; lacks deep internal host-level context specific to MedDefense infrastructure.
-- **Bias / Visibility Constraints**: Strict government threshold for attribution; avoids speculative naming conventions (labels threat cluster as HEALTHBANE).
+- **Bias or Visibility Constraints**: Strict government threshold for attribution; avoids speculative naming conventions (labels threat cluster as HEALTHBANE).
 
 ### Source 2: Commercial Feed Extract (`commercial_feed_extract.json`)
 - **Source Reliability**: **B** (Usually Reliable — Automated commercial threat data vendor)
@@ -45,7 +45,7 @@ To evaluate intelligence sources objectively and mitigate cognitive bias, this a
 - **Timeliness**: **Real-Time / High** (Rapid automated delivery)
 - **Relevance to MedDefense**: **Medium-High** (Covers global and healthcare-focused indicators, including legitimate shared services)
 - **Limitations**: Algorithmic collection produces false positives (e.g., listing legitimate CDNs and services like `Outlook.com` as malicious).
-- **Bias / Visibility Constraints**: Commercial vendor incentive to assign propriety threat actor names (e.g., `VITALSCORE`) for marketing and differentiation.
+- **Bias or Visibility Constraints**: Commercial vendor incentive to assign propriety threat actor names (e.g., `VITALSCORE`) for marketing and differentiation.
 
 ### Source 3: Researcher Blog Analysis (`researcher_blog_analysis.txt`)
 - **Source Reliability**: **C** (Fairly Reliable — Independent cybersecurity researcher)
@@ -53,7 +53,7 @@ To evaluate intelligence sources objectively and mitigate cognitive bias, this a
 - **Timeliness**: **Medium** (Published post-analysis after initial incident discovery)
 - **Relevance to MedDefense**: **Medium** (Provides technical depth on tooling and script behavior)
 - **Limitations**: Single-analyst perspective; limited visibility into sector-wide telemetry; potential for unverified claims.
-- **Bias / Visibility Constraints**: Subject to confirmation bias; assigns attribution (`APT-MEDAGENT`) with medium confidence based on overlapping TTPs without full campaign infrastructure visibility.
+- **Bias or Visibility Constraints**: Subject to confirmation bias; assigns attribution (`APT-MEDAGENT`) with medium confidence based on overlapping TTPs without full campaign infrastructure visibility.
 
 ### Source 4: MedDefense 4x00 Findings (`meddefense_4x00_findings.txt`)
 - **Source Reliability**: **A** (Completely Reliable — First-party internal SOC / incident response team)
@@ -61,18 +61,18 @@ To evaluate intelligence sources objectively and mitigate cognitive bias, this a
 - **Timeliness**: **High** (Direct observation during active incident window)
 - **Relevance to MedDefense**: **Maximum / Critical** (100% specific to MedDefense systems, personnel, and endpoints)
 - **Limitations**: Restricted to internal perimeter and endpoint visibility; lacks broader sector-wide campaign context.
-- **Bias / Visibility Constraints**: Strictly evidence-based; deliberately avoids external threat actor attribution due to limited external visibility.
+- **Bias or Visibility Constraints**: Strictly evidence-based; deliberately avoids external threat actor attribution due to limited external visibility.
 
 ---
 
 ## 3. Source Comparison Matrix
 
-| Source | Reliability | Credibility | Timeliness | Relevance | Primary Focus | Key Limitation | Overall Confidence |
-| :--- | :---: | :---: | :---: | :---: | :--- | :--- | :---: |
-| **HC3 Advisory** | **A** | **1** | High | High | Sector-wide advisory & actionable IOCs | High attribution threshold | **HIGH** |
-| **Commercial Feed** | **B** | **2** | Real-Time | Medium-High | Automated bulk indicator correlation | Broad noise / False positive risk | **MEDIUM** |
-| **Researcher Blog** | **C** | **3** | Medium | Medium | Deep technical / Code-level analysis | Speculative attribution & single visibility | **MEDIUM** |
-| **MedDefense 4x00** | **A** | **1** | Real-Time | Maximum | First-party incident telemetry & impact | Internal scope only | **HIGH** |
+| Source | Source Reliability | Information Credibility | Timeliness | Relevance to MedDefense | Primary Focus | Key Limitation | Bias or Visibility Constraints | Overall Confidence |
+| :--- | :---: | :---: | :---: | :---: | :--- | :--- | :--- | :---: |
+| **HC3 Advisory** | **A** | **1** | High | High | Sector-wide advisory & actionable IOCs | High attribution threshold | Strict government attribution standards | **HIGH** |
+| **Commercial Feed** | **B** | **2** | Real-Time | Medium-High | Automated bulk indicator correlation | Broad noise / False positive risk | Vendor taxonomy marketing (`VITALSCORE`) | **MEDIUM** |
+| **Researcher Blog** | **C** | **3** | Medium | Medium | Deep technical / Code-level analysis | Speculative attribution & single visibility | Limited visibility (`APT-MEDAGENT`) | **MEDIUM** |
+| **MedDefense 4x00** | **A** | **1** | Real-Time | Maximum | First-party incident telemetry & impact | Internal scope only | Strict focus on internal impact only | **HIGH** |
 
 ---
 
@@ -80,26 +80,33 @@ To evaluate intelligence sources objectively and mitigate cognitive bias, this a
 
 A critical discrepancy exists across intelligence sources regarding threat actor naming and attribution:
 
-1. **HC3 (Sector Advisory)** tracks the activity under the operational cluster name **HEALTHBANE**. HC3 explicitly avoids attributing the activity to a nation-state or specific commercial naming vendor, maintaining strict regulatory evidentiary standards.
-2. **Commercial Feed Vendor** attributes the activity to **VITALSCORE**, utilizing proprietary threat taxonomy to package and sell intelligence feeds.
-3. **Researcher Blog** assigns attribution to **APT-MEDAGENT** with **Medium Confidence**, drawing inferences from code similarity and shared infrastructure patterns observed in public samples.
-4. **MedDefense 4x00 Internal Team** strictly avoids threat actor attribution, focusing entirely on observable IOCs, affected assets (`WS-NURSE-04`), and immediate technical mitigation.
+- **HC3 (Sector Advisory)** uses **HEALTHBANE** and does not endorse **VITALSCORE** or other commercial labels, maintaining strict evidentiary standards.
+- **Commercial Feed Vendor** uses **VITALSCORE**, utilizing proprietary threat taxonomy to package and differentiate intelligence feeds.
+- **Researcher Blog** uses **APT-MEDAGENT** with medium confidence, drawing inferences from code similarity and shared infrastructure patterns observed in public samples.
+- **MedDefense 4x00 Internal Team** avoids attribution entirely, focusing strictly on observable IOCs, affected assets (`WS-NURSE-04`), and immediate technical mitigation.
 
 ### Analytical Synthesis & Resolution
-Attribution conflicts are common in intelligence-driven defense due to differing visibility, methodologies, and business motives. Commercial vendors invent proprietary names for marketing differentiation, independent researchers rely on limited code overlap, and sector authorities maintain high legal standards before assigning state-level threat labels.
+Attribution conflicts occur frequently due to differing visibility, legal thresholds, and commercial incentives. Commercial vendors invent proprietary names for market positioning, independent researchers rely on limited code overlap, and sector authorities maintain high regulatory standards before assigning threat labels.
 
-**Conclusion**: For operational defense and SOC operations at MedDefense, attribution naming is secondary to technical behavior. MedDefense will adopt **HEALTHBANE** as the official campaign identifier for internal tracking and sector reporting (aligning with HC3), while mapping technical indicators directly to observable MITRE ATT&CK techniques regardless of actor naming.
+**Conclusion**: MedDefense will adopt **HEALTHBANE** as the primary operational campaign identifier for internal tracking and sector reporting (aligning with HC3), while treating technical indicators as actionable regardless of naming conventions.
 
 ---
 
-## 5. Intelligence Weighting and Action Recommendations
+## 5. Weighting Recommendation
 
-### Weighting Framework
-1. **Confirmed Healthcare-Sector Facts**: Prioritize **HC3 Advisory** and **MedDefense 4x00 Findings**. These represent authoritative, ground-truth data for threat landscape dynamics and direct internal impact.
-2. **Deep Technical & Behavioral Details**: Utilize **Researcher Blog Analysis** for reverse-engineering insights, script behavior, and potential payload mechanics, while treating attribution assertions as unverified hypotheses.
-3. **Automated Threat Detection & IOC Correlation**: Use **Commercial Feed Extract** for rapid indicator matching, but subject all indicators to strict triage filters to strip out noise, shared CDNs, and legitimate services (e.g., `Outlook.com`).
+### Source Prioritization Guidelines
 
-### Conflict Resolution Guidelines
-- **Internal vs. External Data**: In the event of contradiction between internal network telemetry (4x00) and external feeds, **MedDefense 4x00 findings always take precedence** for local remediation.
-- **Attribution Discrepancies**: Standardize on HC3 nomenclature (**HEALTHBANE**) for all official communications, regulatory reporting, and detection rule labeling.
-- **IOC Validation Rule**: No commercial feed indicator shall be deployed directly to blocking infrastructure without passing cross-validation against internal allowlists and sector-wide advisories.
+1. **Confirmed Healthcare-Sector Facts Prioritization**:
+   - Prioritize **HC3 Advisory** (`HC3_Advisory_HEALTHBANE_TLP_CLEAR.txt`) and **MedDefense 4x00 Findings** (`meddefense_4x00_findings.txt`) for authoritative, confirmed facts regarding healthcare sector threats and internal organization impact.
+
+2. **Technical Details**:
+   - Use **Researcher Blog Analysis** (`researcher_blog_analysis.txt`) as a useful source for deep technical details, reverse-engineering insights, script behavior, and potential payload mechanics.
+
+3. **Commercial Noise and Weak Clustering**:
+   - Treat **Commercial Feed Extract** (`commercial_feed_extract.json`) carefully due to noise, automated collection, weak clustering, and false-positive risks (such as flagging legitimate infrastructure like `Outlook.com` or Cloudflare IPs).
+
+4. **Handling Conflicting Claims**:
+   - When sources contradict:
+     - **Internal Evidence Trumps External Feeds**: First-party telemetry from `meddefense_4x00_findings.txt` takes precedent for local defense.
+     - **Attribution Standard**: Standardize on **HEALTHBANE** for external and regulatory alignment, ignoring vendor-specific naming like `VITALSCORE` or `APT-MEDAGENT`.
+     - **IOC Validation**: Cross-validate all commercial feed indicators against internal allowlists before applying automated block rules.
