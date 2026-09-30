@@ -12,8 +12,8 @@
 * **One-Line Summary:** Formal sector advisory detailing the multi-stage HEALTHBANE campaign targeting US healthcare providers via phishing, macro-enabled documents, and DNS exfiltration.
 * **Key Limitations / Caveats:** Observational scope is limited to 6 partner organizations; low confidence in threat actor attribution.
 
-### Source 2: Commercial Threat Feed
-* **Source Name:** Acme CTI Commercial Feed (ACME-HEALTH-2026-0426-117)
+### Source 2: Commercial Threat Feed (commercial_feed_extract.json)
+* **Source Name:** commercial_feed_extract.json (Acme CTI Commercial Feed)
 * **Source Type:** commercial feed
 * **Publish Date:** 2026-04-26
 * **TLP Classification:** TLP:AMBER
@@ -49,7 +49,7 @@
 ### Indicator Statistics
 * **Total Raw Indicators Across All Sources:** 89
   * *HC3 Advisory:* 23
-  * *Commercial Feed:* 41
+  * *commercial_feed_extract.json:* 41
   * *Researcher Blog:* 14
   * *MedDefense 4x00:* 11
 * **Total Unique Indicators (Post-Deduplication):** 64
@@ -62,7 +62,7 @@
 
 1. **Attribution Discrepancies:**
    * **HC3 Advisory** labels the campaign **HEALTHBANE** and explicitly states that attribution to a named threat group is **UNCONFIRMED** (Low Confidence).
-   * **Commercial Feed** tracks the activity under its proprietary tag **VITALSCORE**.
+   * **commercial_feed_extract.json (Commercial Feed)** tracks the activity under its proprietary tag **VITALSCORE**.
    * **Researcher Blog** attributes the activity to **APT-MEDAGENT** based on tool reuse (PHPMailer 6.6.0, Njalla/Namecheap infrastructure, config patterns).
 
 2. **Temporal Discrepancies:**
@@ -70,5 +70,5 @@
    * **HC3 Advisory** tracks campaign progression through **2026-04-26** (covering Stage 2 delivery and Stage 3 DNS exfiltration).
 
 3. **Data Completeness & Noise:**
-   * **Commercial Feed** contains automated feed noise, including low-confidence indicators not observed by HC3 or internal forensics.
+   * **commercial_feed_extract.json** contains automated feed noise, including low-confidence indicators not observed by HC3 or internal forensics.
    * High-fidelity internal context (specific target email accounts and customized landing URLs like `id=dmarsh&token=a8f3e2d1`) is present solely in the **MedDefense 4x00** report.
