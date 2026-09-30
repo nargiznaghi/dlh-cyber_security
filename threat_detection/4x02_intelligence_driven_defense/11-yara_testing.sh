@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Script: 11-yara_testing.sh
 # Author: Nargiz Naghiyeva
 # Description: Automated testing & metric calculation script for HEALTHBANE YARA detection arsenal
@@ -126,4 +126,3 @@ run_rule_test() {
 run_rule_test "9-yara_phishing_pdf.yar" "HEALTHBANE_Phishing_PDF"
 run_rule_test "10-yara_arsenal.yar" "HEALTHBANE_Email_Headers"
 run_rule_test "10-yara_arsenal.yar" "HEALTHBANE_Campaign_Composite"
-
