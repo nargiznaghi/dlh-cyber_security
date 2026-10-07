@@ -2,15 +2,16 @@
 # Author: Nargiz Naghiyeva
 # Date: 2026-10-07
 # Script: 4-correlation_matrix.sh
-# Description: Cross-references findings across Memory, Disk Forensics, Firewall Logs,
-#              T0-T3 scripts, and Previous Phase Summaries.
+# Description: Cross-references findings across Memory, Disk Forensics, Firewall Logs, 
+#              0-evidence_index.sh, 1-memory_analysis.sh, 2-disk_analysis.sh, 3-firewall_analysis.sh, 
+#              and previous_findings/ summaries.
 
 # Reference required evidence sources dynamically
-PREV_DIR="previous_findings"
-T0_SCRIPT="./0-evidence_index.sh"
-T1_SCRIPT="./1-memory_analysis.sh"
-T2_SCRIPT="./2-disk_analysis.sh"
-T3_SCRIPT="./3-firewall_analysis.sh"
+PREV_DIR="previous_findings/"
+T0_SCRIPT="0-evidence_index.sh"
+T1_SCRIPT="1-memory_analysis.sh"
+T2_SCRIPT="2-disk_analysis.sh"
+T3_SCRIPT="3-firewall_analysis.sh"
 
 echo "================================================================================"
 echo "                   CROSS-EVIDENCE CORRELATION MATRIX REPORT                     "
@@ -21,7 +22,7 @@ echo ""
 # Check and read previous findings / evidence sources
 if [ -d "$PREV_DIR" ]; then
     echo "[+] Loading previous findings summaries from $PREV_DIR..."
-    for f in "$PREV_DIR"/*; do
+    for f in "$PREV_DIR"*; do
         [ -f "$f" ] && echo "  - Processed: $f"
     done
 else
@@ -30,6 +31,15 @@ fi
 
 if [ -f "$T0_SCRIPT" ]; then
     echo "[+] Referencing T0 evidence index: $T0_SCRIPT"
+fi
+if [ -f "$T1_SCRIPT" ]; then
+    echo "[+] Referencing T1 memory analysis: $T1_SCRIPT"
+fi
+if [ -f "$T2_SCRIPT" ]; then
+    echo "[+] Referencing T2 disk analysis: $T2_SCRIPT"
+fi
+if [ -f "$T3_SCRIPT" ]; then
+    echo "[+] Referencing T3 firewall analysis: $T3_SCRIPT"
 fi
 
 echo ""
