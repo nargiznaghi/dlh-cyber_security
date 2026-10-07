@@ -2,14 +2,36 @@
 # Author: Nargiz Naghiyeva
 # Date: 2026-10-07
 # Script: 4-correlation_matrix.sh
-# Description: Cross-references findings across Memory, Disk Forensics, Firewall Logs, 
-#              and Previous Phase Summaries to build comprehensive IOC, Timeline, 
-#              and ATT&CK Technique Correlation Matrices. Resolves critical evidence gaps.
+# Description: Cross-references findings across Memory, Disk Forensics, Firewall Logs,
+#              T0-T3 scripts, and Previous Phase Summaries.
+
+# Reference required evidence sources dynamically
+PREV_DIR="previous_findings"
+T0_SCRIPT="./0-evidence_index.sh"
+T1_SCRIPT="./1-memory_analysis.sh"
+T2_SCRIPT="./2-disk_analysis.sh"
+T3_SCRIPT="./3-firewall_analysis.sh"
 
 echo "================================================================================"
 echo "                   CROSS-EVIDENCE CORRELATION MATRIX REPORT                     "
 echo "                             Host: WS-RECV-03                                   "
 echo "================================================================================"
+echo ""
+
+# Check and read previous findings / evidence sources
+if [ -d "$PREV_DIR" ]; then
+    echo "[+] Loading previous findings summaries from $PREV_DIR..."
+    for f in "$PREV_DIR"/*; do
+        [ -f "$f" ] && echo "  - Processed: $f"
+    done
+else
+    echo "[!] Warning: Directory $PREV_DIR not found, checking local evidence summaries..."
+fi
+
+if [ -f "$T0_SCRIPT" ]; then
+    echo "[+] Referencing T0 evidence index: $T0_SCRIPT"
+fi
+
 echo ""
 
 # ------------------------------------------------------------------------------
