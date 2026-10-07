@@ -1,0 +1,85 @@
+#!/bin/bash
+# Script: 13-detection_rules.sh
+# Author: Nargiz Naghiyeva
+# Date: 2026-10-07
+# Description: Generates detection rule drafts and updates detection posture based on Stage 4 hunt findings.
+
+ANALYST_NAME="Nargiz Naghiyeva"
+OUTPUT_FILE="detection_rules_output.txt"
+
+{
+    echo "================================================================"
+    echo "   HEALTHBANE THREAT HUNT: New Detection Rules & Posture"
+    echo "   Analyst: $ANALYST_NAME"
+    echo "   Date: 2026-10-07"
+    echo "================================================================"
+    echo ""
+
+    echo "=== 1. WAZUH-STYLE DETECTION RULE DRAFTS ==="
+    echo ""
+    echo "--- Rule 1: PsExec Anomalous Source / Unauthorized Workstation ---"
+    echo "  <rule id=\"100201\" level=\"12\">"
+    echo "    <if_sid>60100</if_sid>"
+    echo "    <field name=\"win.eventdata.image\" type=\"pcre2\">(?i)\\\\psexesvc\\.exe$</field>"
+    echo "    <match>WS-</match>"
+    echo "    <description>HEALTHBANE: PsExec lateral movement initiated from workstation endpoint.</description>"
+    echo "    <mitre><id>T1569.002</id></mitre>"
+    echo "  </rule>"
+    echo ""
+
+    echo "--- Rule 2: LSASS Access from Non-System Process ---"
+    echo "  <rule id=\"100202\" level=\"14\">"
+    echo "    <if_sid>60100</if_sid>"
+    echo "    <field name=\"win.system.eventID\">10</field>"
+    echo "    <field name=\"win.eventdata.targetImage\" type=\"pcre2\">(?i)\\\\lsass\\.exe$</field>"
+    echo "    <options>no_log</options>"
+    echo "    <description>HEALTHBANE: Potential Credential Dumping - Unauthorized access to LSASS memory.</description>"
+    echo "    <mitre><id>T1003.001</id></mitre>"
+    echo "  </rule>"
+    echo ""
+
+    echo "--- Rule 3: Service Account Authentication from Unauthorized Host ---"
+    echo "  <rule id=\"100203\" level=\"12\">"
+    echo "    <if_sid>60100</if_sid>"
+    echo "    <field name=\"win.system.eventID\">4624</field>"
+    echo "    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\">^svc_</field>"
+    echo "    <field name=\"win.eventdata.workstationName\" type=\"pcre2\">^WS-</field>"
+    echo "    <description>HEALTHBANE: Service account authenticated from an unauthorized workstation.</description>"
+    echo "    <mitre><id>T1078.002</id></mitre>"
+    echo "  </rule>"
+    echo ""
+
+    echo "--- Rule 4: WMI Child Process Anomaly ---"
+    echo "  <rule id=\"100204\" level=\"10\">"
+    echo "    <if_sid>60100</if_sid>"
+    echo "    <field name=\"win.system.eventID\">1</field>"
+    echo "    <field name=\"win.eventdata.parentImage\" type=\"pcre2\">(?i)\\\\WmiPrvSE\\.exe$</field>"
+    echo "    <description>HEALTHBANE: Suspicious child process spawned via WMI execution.</description>"
+    echo "    <mitre><id>T1047</id></mitre>"
+    echo "  </rule>"
+    echo ""
+
+    echo "=== 2. NETWORK-LEVEL RULE DRAFT ==="
+    echo "  - Rule ID / Signature: SMB-PSEXEC-SVC-INSTALL (Suricata / Network Level)"
+    echo "  - Behavior Detected: PsExec service binary transmission (psexesvc.exe) over SMB pipes to internal hosts."
+    echo "  - Hunt Evidence: Motivated by PsExec activity originating from WS-FINANCE-04 during Stage 4 lateral movement."
+    echo "  - Rule Draft:"
+    echo "    alert smb any any -> internal_net any (msg:\"HEALTHBANE: PsExec Service Binary Upload over SMB\"; file_data; content:\"PSEXESVC\"; sid:900101; rev:1;)"
+    echo ""
+
+    echo "=== 3. RULE CONTEXT & EXPECTED FALSE POSITIVES ==="
+    echo "  - PsExec Rule: Low FP rate if restricted to administrative subnets; baseline comparison against authorized IT tooling."
+    echo "  - LSASS Rule: Zero FP expected if system processes (csrss, services, wininit) are properly allowlisted."
+    echo "  - Service Account Rule: Zero FP expected; service accounts must strictly adhere to authorization matrix."
+    echo ""
+
+    echo "=== 4. UPDATED DETECTION POSTURE ==="
+    echo "  - Before Hunt: Reactive detection with zero visibility into Stage 4 lateral movement, resulting in 90-minute dwell time gaps and unalerted credential harvesting."
+    echo "  - After Hunt: Proactive, automated alerting for credential dumping, cross-host service account abuse, and PsExec execution."
+    echo "  - Improved ATT&CK Coverage: Added robust detection coverage for T1003.001 (LSASS), T1569.002 (PsExec), T1078.002 (Valid Accounts), and T1047 (WMI)."
+    echo ""
+    echo "DETECTION RULES GENERATION COMPLETE."
+    echo "================================================================"
+} | tee "$OUTPUT_FILE"
+
+echo "[*] Output successfully written to output file: $OUTPUT_FILE"
