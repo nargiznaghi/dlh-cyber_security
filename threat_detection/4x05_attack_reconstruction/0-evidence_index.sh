@@ -1,130 +1,125 @@
 #!/usr/bin/env bash
-# File: threat_detection/4x05_attack_reconstruction/0-evidence_index.sh
-# Purpose: Catalog evidence sources, build coverage matrix, and identify analytical gaps for HEALTHBANE reconstruction.
-# Author: Nargiz Naghiyeva
-# Date: 2026-10-07
+# Script name: 0-evidence_index.sh
+# Directory: threat_detection/4x05_attack_reconstruction
 
-set -euo pipefail
-
-CURRENT_HOST=$(hostname)
-CURRENT_DATE=$(date "+%Y-%m-%d %H:%M:%S")
+ANALYST="Nargiz Naghiyeva"
+DATE="07.10.2026"
 
 echo "================================================================"
 echo "   EVIDENCE INVENTORY - HEALTHBANE Reconstruction"
-echo "   Analyst: ${CURRENT_HOST}    Date: ${CURRENT_DATE}"
+echo "   Analyst: ${ANALYST}    Date: ${DATE}"
 echo "================================================================"
+echo ""
 echo "SOURCE CATALOG:"
-
-cat << 'EOF_CAT'
-  [01] 4x00_phishing_summary.txt
-       Phase: 4x00 (Phishing Dissection)
-       Type: Email analysis findings
-       Coverage: Week 11 (initial campaign detection)
-       Reliability: MEDIUM (derived summary, not raw evidence)
-       Key content: 8 emails analyzed, 3 confirmed malicious,
-                    campaign domains, SPF/DKIM failures, credential
-                    exposure for Diane (WS-RECV-03 user)
-
-  [02] 4x01_network_timeline.txt
-       Phase: 4x01 (Network Forensics)
-       Type: PCAP-derived findings
-       Coverage: 48h window surrounding phishing incident
-       Reliability: MEDIUM (derived timeline, not raw PCAPs)
-       Key content: C2 beaconing (5-min intervals), DNS tunneling,
-                    lateral movement traces
-
-  [03] 4x02_malware_analysis.txt
-       Phase: 4x02 (Reverse Engineering)
-       Type: Malware analysis report
-       Coverage: Execution and payload staging window
-       Reliability: MEDIUM (derived report)
-       Key content: Analysis of svchost_update.exe and debug_tool.exe (Mimikatz fork)
-
-  [04] 4x03_forensic_timeline.txt
-       Phase: 4x03 (Endpoint Forensics)
-       Type: Host artifact timeline
-       Coverage: Endpoint activity across infection lifecycle
-       Reliability: MEDIUM (derived timeline)
-       Key content: MFT timestamps, Defender exclusion changes, local process executions
-
-  [05] 4x04_hunting_report.txt
-       Phase: 4x04 (Enterprise Threat Hunting)
-       Type: SIEM hunting findings
-       Coverage: Enterprise-wide activity
-       Reliability: MEDIUM (correlated analytics)
-       Key content: PsExec lateral movement, assessment of WS-RECV-04 and WS-RECV-07
-
-  [06] firewall_sessions_ws_recv_03.json
-       Phase: 4x01 / 4x04 (Network Analysis)
-       Type: Raw firewall logs
-       Coverage: Full session telemetry
-       Reliability: HIGH (raw traffic records)
-       Key content: Complete connection logs for WS-RECV-03, C2 sessions, exfiltration volume
-
-  [07] memory_artifacts.txt
-       Phase: 4x02 / 4x03 (Memory Forensics)
-       Type: Memory dump extraction
-       Coverage: Live memory capture
-       Reliability: HIGH (volatile artifact data)
-       Key content: Volatility analysis, svchost_update process memory, injected code, C2 IPs
-
-  [08] phishing_email_raw.eml
-       Phase: 4x00 (Initial Access)
-       Type: Raw email message
-       Coverage: Initial delivery event
-       Reliability: HIGH (raw message capture)
-       Key content: Original spearphishing email delivered to Diane Marsh
-
-  [09] mitre_attack_mapping.json
-       Phase: 4x05-IR (Threat Intelligence)
-       Type: ATT&CK framework mapping
-       Coverage: Reference framework
-       Reliability: HIGH (standardized intelligence)
-       Key content: Technique IDs and taxonomy for standardized reporting
-
-  [10] previous_findings/summary_all.txt
-       Phase: 4x00 - 4x04 (Multi-Phase Consolidation)
-       Type: Aggregated report summary
-       Coverage: Cumulative investigation
-       Reliability: MEDIUM (consolidated findings)
-       Key content: Synthesis of previous phase outputs and preliminary attack chain
-
-  [11] ir_team_notes.txt
-       Phase: 4x05-IR (Incident Response)
-       Type: Preliminary observations
-       Coverage: WS-RECV-03 capture (Week 16-17)
-       Reliability: LOW (preliminary, some unverified)
-       Key content: Observations requiring analyst validation
-EOF_CAT
-
+echo "  [01] 4x00_phishing_summary.txt"
+echo "       Phase: 4x00 (Phishing Dissection)"
+echo "       Type: Email analysis findings"
+echo "       Coverage: Week 11 (initial campaign detection)"
+echo "       Reliability: MEDIUM (derived summary, not raw evidence)"
+echo "       Key content: 8 emails analyzed, 3 confirmed malicious,"
+echo "                    campaign domains, SPF/DKIM failures, credential"
+echo "                    exposure for Diane (WS-RECV-03 user)"
+echo ""
+echo "  [02] 4x01_network_timeline.txt"
+echo "       Phase: 4x01 (Network Forensics)"
+echo "       Type: PCAP-derived findings"
+echo "       Coverage: 48h window surrounding phishing incident"
+echo "       Reliability: MEDIUM (derived timeline, not raw PCAPs)"
+echo "       Key content: C2 beaconing (5-min intervals), DNS tunneling,"
+echo "                    lateral movement traces"
+echo ""
+echo "  [03] 4x02_threat_intel.txt"
+echo "       Phase: 4x02 (Threat Intelligence)"
+echo "       Type: Threat intelligence report"
+echo "       Coverage: Week 12 (adversary infrastructure profiling)"
+echo "       Reliability: MEDIUM (external threat intel mapping)"
+echo "       Key content: Adversary TTPs, infrastructure overlap, C2 servers,"
+echo "                    campaign attribution markers"
+echo ""
+echo "  [04] 4x03_malware_analysis.txt"
+echo "       Phase: 4x03 (Malware Analysis)"
+echo "       Type: Reverse engineering report"
+echo "       Coverage: Week 13 (payload analysis)"
+echo "       Reliability: HIGH (technical disassembly and dynamic analysis)"
+echo "       Key content: Payload analysis, persistence mechanisms,"
+echo "                    C2 protocols, execution mechanics"
+echo ""
+echo "  [05] 4x04_siem_logs.txt"
+echo "       Phase: 4x04 (SIEM & Log Analysis)"
+echo "       Type: Log analysis"
+echo "       Coverage: Week 14 - Week 16"
+echo "       Reliability: HIGH (aggregated central log telemetry)"
+echo "       Key content: Event log analysis, lateral movement indicators,"
+echo "                    authentication anomalies, staging activities"
+echo ""
+echo "  [06] ir_evidence/fw_traffic.log"
+echo "       Phase: 4x05-IR (Incident Response)"
+echo "       Type: Firewall traffic logs"
+echo "       Coverage: Week 11 - Week 16"
+echo "       Reliability: HIGH (primary network boundary log data)"
+echo "       Key content: Boundary connection logs, outbound egress analysis,"
+echo "                    unidentified IP traffic"
+echo ""
+echo "  [07] ir_evidence/ws_recv03_memory.dmp"
+echo "       Phase: 4x05-IR (Incident Response)"
+echo "       Type: Memory dump"
+echo "       Coverage: Week 16 (point-in-time acquisition)"
+echo "       Reliability: HIGH (volatile host state artifact)"
+echo "       Key content: Process tree, injected DLLs, unencrypted network buffers,"
+echo "                    active C2 sockets"
+echo ""
+echo "  [08] ir_evidence/ws_recv03_disk.raw"
+echo "       Phase: 4x05-IR (Incident Response)"
+echo "       Type: Forensic disk image"
+echo "       Coverage: Historical through Week 16"
+echo "       Reliability: HIGH (non-volatile host storage artifact)"
+echo "       Key content: MFT records, persistence artifacts, registry hives,"
+echo "                    staged data files"
+echo ""
+echo "  [09] reference/mitre_attack_mapping.json"
+echo "       Phase: Reference"
+echo "       Type: Intelligence framework mapping"
+echo "       Coverage: All phases"
+echo "       Reliability: HIGH (standardized reference structure)"
+echo "       Key content: Technique identifiers, taxonomy definitions,"
+echo "                    tactic associations"
+echo ""
+echo "  [10] previous_findings/summary_report.pdf"
+echo "       Phase: Previous Investigations"
+echo "       Type: Executive summary"
+echo "       Coverage: Week 11 - Week 14"
+echo "       Reliability: MEDIUM (derived historical analysis)"
+echo "       Key content: Consolidated timeline of prior investigation rounds,"
+echo "                    identified scope"
+echo ""
+echo "  [11] ir_team_notes.txt"
+echo "       Phase: 4x05-IR (Incident Response)"
+echo "       Type: Preliminary observations"
+echo "       Coverage: WS-RECV-03 capture (Week 16-17)"
+echo "       Reliability: LOW (preliminary, some unverified)"
+echo "       Key content: Observations requiring analyst validation"
 echo ""
 echo "TEMPORAL COVERAGE MATRIX:"
-cat << 'EOF_MATRIX'
-  Week 11  [EMAIL][NETWORK][--------][--------][--------][--------]
-  Week 12  [------][--------][INTEL---][--------][--------][--------]
-  Week 13  [------][--------][--------][MALWARE-][--------][--------]
-  Week 14  [------][--------][--------][--------][SIEM----][--------]
-  Week 15  [------][--------][--------][--------][SIEM----][--------]
-  Week 16  [------][--------][--------][--------][SIEM----][IR------]
-
-  GAP: No network capture data after Week 11 48h window
-  GAP: No endpoint telemetry before Week 14 SIEM collection
-  GAP: Memory/disk evidence only for WS-RECV-03, not other hosts
-EOF_MATRIX
-
+echo "  Week 11  [EMAIL][NETWORK][--------][--------][--------][--------]"
+echo "  Week 12  [------][--------][INTEL---][--------][--------][--------]"
+echo "  Week 13  [------][--------][--------][MALWARE-][--------][--------]"
+echo "  Week 14  [------][--------][--------][--------][SIEM----][--------]"
+echo "  Week 15  [------][--------][--------][--------][SIEM----][--------]"
+echo "  Week 16  [------][--------][--------][--------][SIEM----][IR------]"
+echo ""
+echo "  GAP: No network capture data after Week 11 48h window"
+echo "  GAP: No endpoint telemetry before Week 14 SIEM collection"
+echo "  GAP: Memory/disk evidence only for WS-RECV-03, not other hosts"
 echo ""
 echo "CRITICAL QUESTIONS FOR RECONSTRUCTION:"
-cat << 'EOF_QUESTIONS'
-  [Q1] Does the new firewall evidence confirm or contradict the
-       4x01 network timeline for WS-RECV-03 ?
-  [Q2] What is the unknown IP in firewall sessions -- secondary
-       C2 or unrelated traffic ?
-  [Q3] Did the data staging succeed in exfiltrating patient data,
-       or was it interrupted by the hunt ?
-  [Q4] Are there additional persistence mechanisms beyond the
-       scheduled task found on WS-RECV-03 ?
-  [Q5] What ATT&CK techniques remain unmapped after integrating
-       all evidence sources ?
-EOF_QUESTIONS
-
+echo "  [Q1] Does the new firewall evidence confirm or contradict the"
+echo "       4x01 network timeline for WS-RECV-03 ?"
+echo "  [Q2] What is the unknown IP in firewall sessions -- secondary"
+echo "       C2 or unrelated traffic ?"
+echo "  [Q3] Did the data staging succeed in exfiltrating patient data,"
+echo "       or was it interrupted by the hunt ?"
+echo "  [Q4] Are there additional persistence mechanisms beyond the"
+echo "       scheduled task found on WS-RECV-03 ?"
+echo "  [Q5] What ATT&CK techniques remain unmapped after integrating"
+echo "       all evidence sources ?"
 echo "================================================================"
