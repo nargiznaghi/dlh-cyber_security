@@ -1,21 +1,15 @@
-<!-- 
-Author: Nargiz Naghiyeva
-Date: 2026-10-14
--->
-
-# Severity Matrix
+# MedDefense Severity Matrix
 
 ## Purpose
 This matrix establishes a standardized severity classification framework across all engineering, clinical, legal, and executive teams at MedDefense. It ensures predictable escalation, response SLAs, and decision authority during security incidents.
 
 ## Severity Matrix Table
-
-| Severity Level | Patient Safety Impact | Data Exposure | Service Availability | Max Response Time | Decision Authority |
+| Level | Patient Safety Impact | Data Exposure | Service Availability | Max Response Time | Decision Authority |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **SEV1** | high | confirmed_broad | full_outage | 15 | Incident Commander |
-| **SEV2** | moderate | confirmed_limited | partial_outage | 30 | Incident Commander |
-| **SEV3** | low | suspected | degraded | 120 | Security Operations Lead |
-| **SEV4** | none | none | none | 1440 | On-Call Analyst |
+| SEV1 | high | confirmed_broad | full_outage | 15 | CISO |
+| SEV2 | moderate | confirmed_limited | partial_outage | 30 | IR_Commander |
+| SEV3 | low | suspected | degraded | 120 | Technical_Lead |
+| SEV4 | none | none | none | 1440 | Scribe |
 
 ## Level Definitions
 
@@ -25,19 +19,19 @@ This matrix establishes a standardized severity classification framework across 
 - Complete outage of regional hospital ICU telemetry network impacting real-time patient monitoring capabilities.
 
 ### SEV2
-- Intermittent API failure or partial outage affecting pharmacy integration software and outpatient prescription routing.
-- Confirmed compromise of a privileged administrator account on staging infrastructure holding limited clinical telemetry.
-- Unauthorized access detected on an internal hospital file share containing limited patient registration exports.
+- Confirmed compromise of a clinical-access user account or privilege escalation on clinical infrastructure.
+- Malware confirmed on a single workstation at a clinical site with potential lateral movement capability.
+- Suspected exfiltration of patient health records under active investigation.
 
 ### SEV3
-- Suspicious credential submission following a phishing email caught and contained before privilege escalation or lateral movement.
-- Isolated malware detection on a non-critical workstation automatically blocked and quarantined by EDR.
-- Performance degradation on non-clinical staff scheduling or administrative web applications.
+- Suspicious credential submission following an external phishing campaign targeting hospital staff.
+- Isolated malware detection on a non-critical corporate workstation automatically blocked by EDR.
+- Performance degradation or intermittent latency on non-clinical staff scheduling applications.
 
 ### SEV4
-- High-volume external port scanning or automated brute-force attempts successfully blocked by edge firewalls.
+- High-volume external port scanning or automated brute-force login attempts successfully blocked by edge firewalls.
 - Informational security scanner alert identifying non-exploitable vulnerabilities on internal assets.
-- False positive antivirus alert triggered by routine administrative script execution.
+- False-positive antivirus alert triggered by routine administrative script execution.
 
 ## Escalation Rule
-Incident severity must be re-evaluated continuously during active response. If impact metrics exceed the assigned level's thresholds or resolution is not achieved within the auto-escalation window, the Decision Authority must immediately raise the severity to the higher level.
+Incident severity must be reviewed and re-evaluated at every status update during an active incident. Severity increases when new evidence reveals a higher impact on patient safety, data exposure, or service availability. Conversely, severity is lowered only after confirmed technical containment, eradication of threats, and formal approval by the IR Commander.
