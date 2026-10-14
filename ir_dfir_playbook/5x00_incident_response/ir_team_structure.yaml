@@ -64,7 +64,7 @@ escalation:
       - Technical_Lead
     on_scope_expansion:
       - IR_Commander
-    time_threshold_minutes_to_escalate: 1440
+    time_threshold_minutes_to_escalate: 240
 
   SEV3:
     on_detection:
@@ -74,7 +74,7 @@ escalation:
       - IR_Commander
     on_scope_expansion:
       - Communications_Lead
-    time_threshold_minutes_to_escalate: 120
+    time_threshold_minutes_to_escalate: 60
 
   SEV2:
     on_detection:
@@ -86,7 +86,7 @@ escalation:
       - Legal_Liaison
     on_scope_expansion:
       - Executive_Sponsor
-    time_threshold_minutes_to_escalate: 60
+    time_threshold_minutes_to_escalate: 30
 
   SEV1:
     on_detection:
