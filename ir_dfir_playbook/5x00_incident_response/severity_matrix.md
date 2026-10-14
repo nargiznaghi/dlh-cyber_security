@@ -6,10 +6,10 @@ This matrix establishes a standardized severity classification framework across 
 ## Severity Matrix Table
 | Level | Patient Safety Impact | Data Exposure | Service Availability | Max Response Time | Decision Authority |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| SEV1 | high | confirmed_broad | full_outage | 15 | CISO |
-| SEV2 | moderate | confirmed_limited | partial_outage | 30 | IR_Commander |
-| SEV3 | low | suspected | degraded | 120 | Technical_Lead |
-| SEV4 | none | none | none | 1440 | Scribe |
+| SEV1 | high | confirmed_broad | full_outage | 15 min | CISO |
+| SEV2 | moderate | confirmed_limited | partial_outage | 30 min | IR Commander |
+| SEV3 | low | suspected | degraded | 60 min | SOC Lead |
+| SEV4 | none | none | none | 240 min | SOC Analyst |
 
 ## Level Definitions
 
