@@ -1,0 +1,87 @@
+# Author: Nargiz Naghiyeva
+# Date: 2026-10-14
+
+playbook_id: PB-CLIN-02
+title: Clinical Service Degradation Response Playbook
+owner_role: IR_Commander
+
+applies_to:
+  triggers:
+    - DET-RAD-PACS-LATENCY-01
+    - Wazuh EDR CPU High Utilization Alert on Clinical EHR/PACS
+  indicators:
+    - Radiology PACS imaging server query timeouts and slow X-ray retrieval in ER
+    - High CPU/Disk I/O caused by unauthorized background encryption or scan processes versus database index corruption
+
+severity_mapping:
+  initial: SEV2
+  escalate_if:
+    - Clinical downtime procedures activated across Emergency Department or ICU
+    - Confirmed ransomware or active malicious encryption payload on PACS DICOM storage
+
+immediate_actions:
+  - step: Evaluate triage criteria to distinguish security incident (unauthorized processes, outbound C2 connections) from IT performance issue (database bloat, high traffic)
+    owner: Technical_Lead
+    timebox_minutes: 15
+  - step: Contact Chief Medical Officer / ER Clinical Charge Nurse to coordinate patient safety posture prior to any system containment
+    owner: IR_Commander
+    timebox_minutes: 15
+  - step: Notify Clinical Lead to prepare downtime paper/manual workflow procedures if latency exceeds threshold
+    owner: Communications_Lead
+    timebox_minutes: 15
+
+evidence_preservation:
+  - artifact: Memory dump and process tree snapshot from PACS imaging server
+    method: Live response volatile memory capture via EDR / WinPmem
+    before_step: Apply network micro-segmentation or service throttling
+  - artifact: DICOM server access logs and database query activity logs
+    method: Splunk SIEM export and local PACS log backup
+    before_step: Restrict service accounts or terminate active DICOM listener threads
+  - artifact: Network traffic pcap capture from PACS interface segment
+    method: Tcpdump/Suricata packet capture on network switch tap
+    before_step: Restrict outbound subnet routing
+
+containment_actions:
+  - step: Execute partial containment via network micro-segmentation, account restriction, or service throttling
+    owner: Technical_Lead
+    decision_point: Investigate under clinical downtime vs. continue service with elevated monitoring and constrained access
+    trade_off: Full isolation guarantees containment but halts emergency X-ray imaging; partial throttling keeps critical imaging online with risk of ongoing malicious activity
+  - step: Restrict elevated non-essential administrative accounts on clinical PACS host
+    owner: Technical_Lead
+    decision_point: None
+    trade_off: Prevents credential abuse while keeping read-only DICOM viewer access active for ER nurses
+  - step: Apply bandwidth throttling on non-emergency imaging query endpoints
+    owner: Technical_Lead
+    decision_point: None
+    trade_off: Prioritizes ER X-ray traffic over routine outpatient specialty imaging requests
+
+eradication_actions:
+  - Terminate unauthorized non-clinical processes and isolate rogue DLL injections on PACS application host
+  - Restore PACS database indexes and application configuration from known-good immutable backup
+  - Rotate all local service account credentials associated with DICOM imaging database services
+
+recovery_validation:
+  - check: PACS imaging server latency and DICOM query retrieval times
+    criterion: X-ray pull requests in ER return in under 3 seconds with zero packet loss or process errors
+  - check: Verify system integrity and absence of unauthorized network connections
+    criterion: EDR confirms zero suspicious process execution and clean file system state
+
+communication_plan:
+  - audience: Legal_Liaison
+  trigger: Potential risk to patient safety or regulatory reporting obligation under clinical safety rules
+  template: notification_legal_clinical_safety.md
+  - audience: Executive_Sponsor
+  trigger: Activation of ER downtime procedures or escalation to SEV1
+  template: notification_executive_downtime.md
+  - audience: Communications_Lead
+  trigger: All-clear confirmation when clinical systems return to baseline performance
+  template: notification
+escalation_triggers:
+  - On-call Clinical Lead activates ER downtime procedures due to inability to access critical patient images
+  - Confirmation that service degradation is driven by active ransomware or malicious data destruction
+  - System latency spreads from Radiology PACS to Main EHR (Epic) or Laboratory Information System (LIS)
+
+post_incident_tasks:
+  - Conduct joint post-incident review with Clinical Leadership and IT Engineering
+  - Update PACS capacity and security monitoring baselines in Splunk
+  - Review and refine clinical downtime transition thresholds in IR playbooks
