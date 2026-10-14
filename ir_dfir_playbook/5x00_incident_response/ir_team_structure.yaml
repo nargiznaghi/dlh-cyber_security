@@ -1,0 +1,104 @@
+# Author: Nargiz Naghiyeva
+# Date: 2026-10-14
+
+roles:
+  IR_Commander:
+    primary: James Chen, SOC Lead
+    backup: Robert Kim, Infrastructure Lead
+    responsibilities:
+      - Owns the incident through closure
+      - Runs the incident bridge and timeline
+      - Authorizes containment actions within authority ceiling
+    authority_ceiling: SEV2
+
+  Technical_Lead:
+    primary: Mike Torres, Network Engineer
+    backup: Sarah Park, IT Director
+    responsibilities:
+      - Directs technical containment and eradication actions
+      - Coordinates forensic evidence collection and preservation
+      - Oversees system restoration and validation
+    authority_ceiling: SEV3
+
+  Communications_Lead:
+    primary: Marcus Webb, Communications Director
+    backup: James Chen, SOC Lead
+    responsibilities:
+      - Manages public and internal status page updates
+      - Coordinates stakeholder messaging with legal counsel
+      - Prevents unauthorized disclosures or leaks
+    authority_ceiling: SEV2
+
+  Legal_Liaison:
+    primary: Helena Reyes, General Counsel
+    backup: Marcus Webb, Communications Director
+    responsibilities:
+      - Assesses HIPAA and regulatory notification requirements
+      - Advises on legal risks of containment trade-offs
+      - Reviews external communications prior to release
+    authority_ceiling: SEV1
+
+  Executive_Sponsor:
+    primary: Dr. Patricia Morales, Chief Information Security Officer
+    backup: Sarah Park, IT Director
+    responsibilities:
+      - Authorizes high-impact operational trade-offs and business interruptions
+      - Interfaces with the executive board and external authorities
+      - Secures emergency budgetary and resource allocations
+    authority_ceiling: SEV1
+
+  Scribe:
+    primary: On-Call SOC Analyst
+    backup: Backup SOC Analyst
+    responsibilities:
+      - Maintains a minute-by-minute incident timeline and log
+      - Records all decisions, authorizations, and actions taken
+      - Archives all chat logs, notes, and evidence references post-incident
+    authority_ceiling: SEV4
+
+escalation:
+  SEV4:
+    on_detection:
+      - Scribe
+    on_confirmation:
+      - Technical_Lead
+    on_scope_expansion:
+      - IR_Commander
+    time_threshold_minutes_to_escalate: 1440
+
+  SEV3:
+    on_detection:
+      - Scribe
+      - Technical_Lead
+    on_confirmation:
+      - IR_Commander
+    on_scope_expansion:
+      - Communications_Lead
+    time_threshold_minutes_to_escalate: 120
+
+  SEV2:
+    on_detection:
+      - Scribe
+      - Technical_Lead
+      - IR_Commander
+    on_confirmation:
+      - Communications_Lead
+      - Legal_Liaison
+    on_scope_expansion:
+      - Executive_Sponsor
+    time_threshold_minutes_to_escalate: 30
+
+  SEV1:
+    on_detection:
+      - Scribe
+      - Technical_Lead
+      - IR_Commander
+      - Communications_Lead
+      - Legal_Liaison
+      - Executive_Sponsor
+    on_confirmation:
+      - Executive_Sponsor
+      - Legal_Liaison
+    on_scope_expansion:
+      - Executive_Sponsor
+    time_threshold_minutes_to_escalate: 15
