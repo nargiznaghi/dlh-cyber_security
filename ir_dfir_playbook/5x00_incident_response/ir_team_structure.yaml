@@ -57,37 +57,6 @@ roles:
     authority_ceiling: SEV4
 
 escalation:
-  SEV4:
-    on_detection:
-      - Scribe
-    on_confirmation:
-      - Technical_Lead
-    on_scope_expansion:
-      - IR_Commander
-    time_threshold_minutes_to_escalate: 240
-
-  SEV3:
-    on_detection:
-      - Scribe
-      - Technical_Lead
-    on_confirmation:
-      - IR_Commander
-    on_scope_expansion:
-      - Communications_Lead
-    time_threshold_minutes_to_escalate: 60
-
-  SEV2:
-    on_detection:
-      - IR_Commander
-      - Technical_Lead
-      - Scribe
-    on_confirmation:
-      - Communications_Lead
-      - Legal_Liaison
-    on_scope_expansion:
-      - Executive_Sponsor
-    time_threshold_minutes_to_escalate: 30
-
   SEV1:
     on_detection:
       - IR_Commander
@@ -97,8 +66,43 @@ escalation:
       - Executive_Sponsor
       - Scribe
     on_confirmation:
+      - IR_Commander
+      - Technical_Lead
+      - Communications_Lead
+      - Legal_Liaison
       - Executive_Sponsor
+      - Scribe
+    on_scope_expansion:
+      - Executive_Sponsor
+      - Legal_Liaison
+    time_threshold_minutes_to_escalate: 15
+
+  SEV2:
+    on_detection:
+      - IR_Commander
+      - Technical_Lead
+    on_confirmation:
+      - Communications_Lead
       - Legal_Liaison
     on_scope_expansion:
       - Executive_Sponsor
-    time_threshold_minutes_to_escalate: 15
+    time_threshold_minutes_to_escalate: 60
+
+  SEV3:
+    on_detection:
+      - Scribe
+      - Technical_Lead
+    on_confirmation:
+      - IR_Commander
+    on_scope_expansion:
+      - Communications_Lead
+    time_threshold_minutes_to_escalate: 120
+
+  SEV4:
+    on_detection:
+      - Scribe
+    on_confirmation:
+      - Technical_Lead
+    on_scope_expansion:
+      - IR_Commander
+    time_threshold_minutes_to_escalate: 1440
