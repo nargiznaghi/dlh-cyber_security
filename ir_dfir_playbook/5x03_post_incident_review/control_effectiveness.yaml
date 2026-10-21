@@ -1,0 +1,68 @@
+- phase: "Credential phishing and submission"
+  att_ck_technique: "T1566.002"
+  controls_expected:
+    - "Email Gateway Phishing Protection"
+    - "Web Proxy Category/Reputation Filtering"
+  controls_fired: []
+  controls_missed:
+    - "Proxy Typosquat Domain Blocking"
+  gap_severity: "high"
+  gap_reason: "Newly registered typosquat domain ms0365-support.login-verification.click was not categorized or blocked by web proxy."
+
+- phase: "VPN access using stolen credentials from a foreign IP"
+  att_ck_technique: "T1078.003"
+  controls_expected:
+    - "Multi-Factor Authentication (MFA)"
+    - "Conditional Access / Impossible Travel Detection"
+  controls_fired: []
+  controls_missed:
+    - "Azure AD Conditional Access Anomaly Alerting"
+  gap_severity: "critical"
+  gap_reason: "Azure AD risk signals for suspicious RU IP (45.63.9.88) were suppressed by 'compliant device' conditional access exemption."
+
+- phase: "PowerShell -> MSBuild LOLBin execution"
+  att_ck_technique: "T1127.001"
+  controls_expected:
+    - "AppLocker / Software Restriction Policies"
+    - "EDR Process Lineage & Behavioral Execution Prevention"
+  controls_fired:
+    - "SIEM Process Creation Audit Logging"
+  controls_missed:
+    - "MSBuild AppLocker Restriction"
+  gap_severity: "critical"
+  gap_reason: "MSBuild.exe allowed inline execution of unverified update.xml payload without AppLocker or EDR blocking."
+
+- phase: "C2 beaconing to external IPs"
+  att_ck_technique: "T1071.001"
+  controls_expected:
+    - "Next-Gen Firewall Threat Intelligence"
+    - "Automated Tor Exit Relay Egress Blocking"
+  controls_fired:
+    - "Network Traffic Flow Logging"
+  controls_missed:
+    - "Automated C2 IP/Relay Egress Block"
+  gap_severity: "high"
+  gap_reason: "Outbound connection to known Tor exit (185.220.101.47) and Cobalt Strike IP (91.234.99.107) was permitted until manual isolation."
+
+- phase: "LSASS credential access and Kerberos ticket extraction"
+  att_ck_technique: "T1003.001"
+  controls_expected:
+    - "Credential Guard"
+    - "EDR LSASS Memory Access Protection"
+  controls_fired: []
+  controls_missed:
+    - "LSASS Memory Protection"
+  gap_severity: "high"
+  gap_reason: "NTLM hashes and Kerberos tickets were extracted from LSASS memory without triggering endpoint prevention."
+
+- phase: "Lateral movement and PHI access"
+  att_ck_technique: "T1550.003"
+  controls_expected:
+    - "Internal Workstation Microsegmentation"
+    - "Privileged Share Access Audit & DLP Controls"
+  controls_fired:
+    - "Active Directory Authentication Audit Logs"
+  controls_missed:
+    - "Workstation-to-Workstation Network Segmentation"
+  gap_severity: "critical"
+  gap_reason: "Lack of network segmentation allowed unhindered lateral movement from WST-WS-031 to WST-WS-017 and read access to LIS_REPORTS$ PHI share."
