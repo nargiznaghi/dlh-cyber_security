@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 HASHES_FILE="hashes.txt"
 LOG_FILE="verification_log.txt"
