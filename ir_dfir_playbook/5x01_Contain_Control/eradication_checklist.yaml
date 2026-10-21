@@ -12,16 +12,27 @@ items:
 
 - id: ERAD-002
   category: malware_artifact
-  target_host: WST-WS-017
-  description: Remove scheduled task persistence and msbuild artifacts
-  command_or_action: schtasks /delete /tn "UpdateTask_7721" /f; Remove-Item "C:\Windows\Temp\msbuild.exe" -Force
+  target_host: WST-WS-031
+  description: Remove scheduled task persistence (random GUID name)
+  command_or_action: schtasks /delete /tn "UpdateTask_7721" /f
   verification_command: schtasks /query | findstr "UpdateTask_7721"
-  expected_verification_result: no matches found
+  expected_verification_result: no matches
+  status: executed
+  executed_at: "2026-04-14T10:20:00Z"
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-003
+  category: malware_artifact
+  target_host: WST-WS-017
+  description: Remove scheduled task persistence and msbuild artifacts on WST-WS-017
+  command_or_action: schtasks /delete /tn "UpdateTask_9942" /f; Remove-Item "C:\Windows\Temp\msbuild.exe" -Force
+  verification_command: schtasks /query | findstr "UpdateTask_9942"
+  expected_verification_result: no matches
   status: executed
   executed_at: "2026-04-14T10:30:00Z"
   executed_by: Nargiz Naghiyeva
 
-- id: ERAD-003
+- id: ERAD-004
   category: malware_artifact
   target_host: LIS-WSIDE-01
   description: Inspect and clear temporary staging folders used during lateral movement
@@ -32,7 +43,7 @@ items:
   executed_at: "2026-04-14T10:45:00Z"
   executed_by: Nargiz Naghiyeva
 
-- id: ERAD-004
+- id: ERAD-005
   category: process
   target_host: WST-WS-017
   description: Terminate malicious msbuild processes communicating with C2
@@ -41,17 +52,6 @@ items:
   expected_verification_result: process not found / error running
   status: executed
   executed_at: "2026-04-14T10:28:00Z"
-  executed_by: Nargiz Naghiyeva
-
-- id: ERAD-005
-  category: process
-  target_host: LIS-WSIDE-01
-  description: Stop suspicious active sessions and unauthorized processes
-  command_or_action: Stop-Process -Id 4102 -Force
-  verification_command: Get-Process -Id 4102 -ErrorAction SilentlyContinue
-  expected_verification_result: process not found
-  status: executed
-  executed_at: "2026-04-14T10:42:00Z"
   executed_by: Nargiz Naghiyeva
 
 - id: ERAD-006
