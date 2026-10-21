@@ -1,5 +1,5 @@
 title: PowerShell Spawning Trusted Developer Utility (LOLBin Proxy Execution)
-id: 8f42d109-7a3b-4c28-98e1-5f2123456789
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
 status: test
 description: Detects PowerShell or Windows Script Host spawning trusted .NET/developer utilities like MSBuild, CSC, VBC, or JSC. Attackers use this technique (LOLBin proxy execution) to execute arbitrary code or inline XML/C# payloads while evading process creation baselines.
 references:
