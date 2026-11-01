@@ -1,0 +1,56 @@
+capabilities:
+  - capability_id: CAP-01
+    name: supply_chain_detection
+    expected_behavior: Technical team quickly correlates EDR beaconing from SCHED-SVR-01 with the recently signed Nexus update, identifying the trusted vendor pipeline rather than an external perimeter breach as the primary threat vector.
+    gap_hypothesis: Team will default to treating the anomaly as a standard host malware infection or external intrusion attempt, failing to suspect the validly signed Nexus agent update and delaying supply chain containment.
+    tested_by_inject: INJ-01
+    evaluation_owner: Technical Facilitator
+
+  - capability_id: CAP-02
+    name: vendor_communication
+    expected_behavior: IR lead and Legal rapidly invoke formal BAA channels to contact Nexus CISO/SecOps (+1 512 555 0184 / soc@nexushealth.io) and request explicit validation of the agent update hash.
+    gap_hypothesis: Team will rely on unverified account executive channels (Priya Natarajan) or delay outreach while waiting for Nexus to initiate notification under their 24-hour BAA clause.
+    tested_by_inject: INJ-01, INJ-02
+    evaluation_owner: Facilitator
+
+  - capability_id: CAP-03
+    name: business_continuity_decision
+    expected_behavior: Leadership and Clinical Director explicitly weigh patient care continuity across all three sites against exfiltration risk before deciding whether to sever the site-to-site IPsec tunnel and suspend FHIR API integrations.
+    gap_hypothesis: Clinical leadership will refuse to take Nexus offline due to appointment disruption, or technical teams will cut the IPsec tunnel unilaterally without establishing manual fallbacks for 3,500 weekly appointments.
+    tested_by_inject: INJ-02, INJ-03
+    evaluation_owner: Lead Facilitator
+
+  - capability_id: CAP-04
+    name: phi_exposure_assessment
+    expected_behavior: Compliance and IR scope ePHI exfiltration bounds via `svc-nexus-prod` FHIR permissions (demographics, scheduling, insurance info) to establish clear exposure metrics for regulatory evaluation.
+    gap_hypothesis: Teams will assume no ePHI exfiltration occurred because Nexus does not handle clinical charting, ignoring demographic and insurance data exfiltration risks under HIPAA.
+    tested_by_inject: INJ-02, INJ-04
+    evaluation_owner: Evaluator (Legal/Compliance)
+
+  - capability_id: CAP-05
+    name: hipaa_notification_posture
+    expected_behavior: Legal Counsel (Sarah Park) independently evaluates HIPAA Breach Notification Rule triggers for MedDefense rather than passively waiting for Nexus's 24-hour BAA breach report window.
+    gap_hypothesis: Legal counsel defers all regulatory assessment and reporting clocks to the vendor, misinterpreting BAA notification timelines as a substitute for MedDefense's covered entity obligations.
+    tested_by_inject: INJ-04
+    evaluation_owner: Evaluator (Legal/Compliance)
+
+  - capability_id: CAP-06
+    name: data_integrity_response
+    expected_behavior: IR and Clinical Operations isolate inbound FHIR data streams (`https://ehr-ingest.meddefense.local/nexus-inbound/`) and initiate manual reconciliation of local Epic records against patient check-ins.
+    gap_hypothesis: Clinical team continues relying on active patient rosters without verifying past update integrity, risking patient safety due to corrupted or altered schedule data.
+    tested_by_inject: INJ-03, INJ-05
+    evaluation_owner: Technical Facilitator
+
+  - capability_id: CAP-07
+    name: crisis_communications
+    expected_behavior: PR/Comms (Helena Reyes) drafts an aligned internal and external messaging strategy that balances transparency with legal exposure without prematurely confirming an unverified data breach.
+    gap_hypothesis: Communications Lead releases contradictory statements or fails to coordinate with Legal before responding to press/media inquiries regarding scheduling outages.
+    tested_by_inject: INJ-05
+    evaluation_owner: Facilitator
+
+  - capability_id: CAP-08
+    name: executive_briefing_under_pressure
+    expected_behavior: Incident lead delivers a concise, board-ready status brief covering known facts, containment status, clinical impact, legal posture, and key next steps under strict time constraints.
+    gap_hypothesis: Briefing focuses heavily on low-level technical forensics while omitting actionable business decisions, clinical impact, and HIPAA exposure risks for board members.
+    tested_by_inject: INJ-06
+    evaluation_owner: Lead Facilitator
