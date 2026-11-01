@@ -1,0 +1,91 @@
+criteria:
+  - inject_id: INJ-00
+    capability_tested: CAP-01
+    pass_criteria:
+      - Incident is declared within the first five minutes of the inject; severity is stated with explicit reasoning (SEV2 minimum).
+      - At least two roles (IR Commander and Communications Lead) are notified by name within the inject window.
+      - Non-disruptive evidence collection (packet captures, EDR log dumps) is initiated before any containment action is discussed.
+    fail_indicators:
+      - Incident is not declared; team continues treating the anomaly as a routine monitoring alert.
+      - Containment actions (e.g., blocking the IP or rebooting `SCHED-SVR-01`) are proposed before any evidence collection step is named.
+      - Vendor Nexus is not identified as the primary source/vector of the alert within the inject window.
+    finding_if_fail: >
+      The team did not declare a formal incident within the first inject window and proposed containment before establishing an evidence collection baseline. This gap indicates that severity classification criteria do not produce consistent results under ambiguous initial conditions. Recommended action: add a Tier 2 escalation trigger for vendor-origin traffic anomalies to the severity matrix, and require evidence preservation as the first named action in host anomaly playbooks (owner: SOC Lead; deadline: 14 days).
+
+  - inject_id: INJ-01
+    capability_tested: CAP-02
+    pass_criteria:
+      - IR lead or Legal immediately invokes formal BAA contact channels (Nexus SecOps / Marcus Oduya) rather than relying on account management contacts.
+      - Team explicitly references the security review finding regarding signed update cert validation without client-side hash pinning.
+      - Technical team requests hash confirmation for the deployed `nexus-agent` update from Nexus SecOps.
+    fail_indicators:
+      - Outreach is directed solely to account executive Priya Natarajan.
+      - Team defers outreach while waiting for Nexus to initiate contact under their 24-hour BAA notification window.
+      - Technical team fails to question the validity of the signed update binary despite the vendor advisory.
+    finding_if_fail: >
+      The team relied on sales account contacts rather than designated 24x7 emergency SecOps channels during a supply chain security event. This gap demonstrates a disconnect between vendor management records and active IR response procedures. Recommended action: update the third-party IR playbook with verified 24x7 security contacts for all critical SaaS vendors and incorporate BAA escalation paths into incident intake checklists (owner: Vendor Risk Manager; deadline: 30 days).
+
+  - inject_id: INJ-02
+    capability_tested: CAP-03
+    pass_criteria:
+      - System isolation decision (severing IPsec tunnel / disabling `svc-nexus-prod`) is explicitly authorized by named leadership (Executive Sponsor / IT Director).
+      - Clinical Operations formally initiates paper/manual scheduling procedures across all three sites before network connections are severed.
+      - Patient safety impact (3,500 weekly appointments) is formally documented in the decision rationale.
+    fail_indicators:
+      - System isolation is deferred indefinitely pending external vendor patch availability.
+      - Technical team unilaterally severs the IPsec tunnel without notifying or consulting Clinical Operations.
+      - No manual or fallback appointment processing procedure is identified or activated.
+    finding_if_fail: >
+      The team failed to establish an authorized business continuity fallback before considering critical network isolation, creating an unmitigated clinical risk across all three sites. Recommended action: publish high-availability manual scheduling SOPs for site operations and establish clear decision authority guidelines for emergency vendor disconnection (owner: IT Director / Clinical Operations Lead; deadline: 30 days).
+
+  - inject_id: INJ-03
+    capability_tested: CAP-06
+    pass_criteria:
+      - Clinical Operations halts reliance on active, unverified patient scheduling rosters.
+      - Team orders a forensic audit and cross-reconciliation of inbound FHIR records (`https://ehr-ingest.meddefense.local/nexus-inbound/`) against core Epic backup logs.
+      - A manual check-in verification workflow is established for immediate next-day appointments across Main, West, and North sites.
+    fail_indicators:
+      - Team assumes inbound appointment data is untampered without auditing HL7 FHIR modify logs.
+      - Clinical staff continue using current digital rosters without manual patient verification.
+      - No process is defined for handling patient schedule discrepancies at check-in desks.
+    finding_if_fail: >
+      The team did not initiate data integrity verification procedures following evidence of unauthorized inbound FHIR access, risking patient care disruption. Recommended action: develop a data integrity validation protocol for EHR ingest channels during suspected API/service principal compromises (owner: Lead DFIR Analyst / EHR System Admin; deadline: 45 days).
+
+  - inject_id: INJ-04
+    capability_tested: CAP-04, CAP-05
+    pass_criteria:
+      - Legal Counsel (Sarah Park) independently starts MedDefense's HIPAA Breach Notification assessment clock upon confirmation of ePHI exfiltration.
+      - Team explicitly rejects Nexus's request to delay reporting by 72 hours, citing covered entity regulatory mandates under HIPAA.
+      - Compliance scopes exposure based on `svc-nexus-prod` access rights (demographics and insurance eligibility for 12,000 patients).
+    fail_indicators:
+      - Legal or Compliance agrees to pause reporting clocks based on vendor preference.
+      - Team misinterprets the vendor's 24-hour BAA notification obligation as a substitute for MedDefense's independent covered entity obligations.
+      - Scoping ignores demographic and insurance data, focusing strictly on the absence of clinical charting.
+    finding_if_fail: >
+      Legal and Compliance deferred regulatory obligations to third-party vendor requests, creating significant HIPAA compliance exposure. Recommended action: establish clear protocol guidelines specifying that vendor BAA timelines do not override covered entity HIPAA breach assessment clocks (owner: Legal Counsel / Privacy Officer; deadline: 30 days).
+
+  - inject_id: INJ-05
+    capability_tested: CAP-07
+    pass_criteria:
+      - Communications Lead (Helena Reyes) drafts an approved holding statement within the 30-minute window.
+      - Statement refutes unverified ransomware claims, confirms operational adjustments, and avoids prematurely disclosing unconfirmed breach metrics.
+      - Statement receives explicit sign-off from Legal Counsel and the Executive Sponsor prior to release.
+    fail_indicators:
+      - No public or internal statement is produced within the deadline.
+      - Statement is released without prior Legal review or contains speculative technical details regarding vendor breach mechanics.
+      - Communications team fails to establish a centralized patient inquiry channel.
+    finding_if_fail: >
+      The organization lacked an agile media response process for third-party supply chain incidents, resulting in unvetted messaging risks. Recommended action: pre-draft holding statement templates specifically for vendor outages and supply chain compromises, requiring mandatory joint Legal/PR sign-off workflows (owner: Communications Lead; deadline: 30 days).
+
+  - inject_id: INJ-06
+    capability_tested: CAP-08
+    pass_criteria:
+      - Executive Sponsor and IR Lead deliver a structured briefing covering timeline, containment state, clinical impact, legal status, and outstanding risks.
+      - Briefing explicitly highlights unresolved vendor persistence in AWS `us-east-1` as an open risk.
+      - Clear re-establishment criteria (clean vendor SBOM, third-party audit, hash pinning) are defined before reconnection is approved.
+    fail_indicators:
+      - Briefing focuses exclusively on technical malware details while omitting clinical continuity and HIPAA exposure metrics.
+      - Team promises immediate service restoration without addressing ongoing vendor environment persistence.
+      - No formal criteria are presented for safe service resumption.
+    finding_if_fail: >
+      The executive briefing failed to articulate key operational risks and technical reconnect criteria to senior leadership. Recommended action: design an executive briefing template for cyber incidents that mandates sections for clinical continuity, legal posture, and vendor reconnect prerequisites (owner: IR Lead / CISO; deadline: 30 days).
