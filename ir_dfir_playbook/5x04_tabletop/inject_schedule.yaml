@@ -1,0 +1,100 @@
+injects:
+  - id: INJ-00
+    time_minutes: 0
+    delivery: facilitator reads aloud
+    situation: >
+      The SOC has flagged unusual outbound traffic from the Nexus scheduling server (SCHED-SVR-01) at the Main campus to
+      193.42.100.77, a host associated with bulletproof hosting infrastructure in Eastern Europe.
+      The alert fired 45 minutes ago. The Nexus system is currently operational. Patient scheduling
+      is running normally across all three sites. No other anomalies have been detected.
+    capability_tested: CAP-01
+    decision_point: Declare an incident? What severity? Who is notified in the first 15 minutes?
+    roles_challenged:
+      - James Chen (SOC Lead / IR Lead)
+      - Marcus Webb (IT Operations)
+    expected_response: >
+      Incident declared at SEV2 minimum; IR Commander and key stakeholders notified; SOC begins non-disruptive evidence collection and IP filtering without severing the Nexus integration yet.
+
+  - id: INJ-01
+    time_minutes: 20
+    delivery: facilitator reads aloud
+    situation: >
+      Nexus Patient Scheduling has published a security advisory. Their AWS build pipeline was compromised by a threat actor with access to their code-signing certificate ("Nexus Health Technologies, Inc."). All software agent updates distributed in the last 21 days—including the payload deployed to SCHED-SVR-01—contain a backdoor allowing unauthorized ePHI access. Nexus advises customers to take immediate action, but they do not yet have a clean patch or SBOM breakdown.
+    capability_tested: CAP-02
+    decision_point: How do you initiate formal vendor triage? Do you wait for vendor guidance or isolate immediately?
+    roles_challenged:
+      - James Chen (IR Lead)
+      - Sarah Park (Legal Counsel)
+      - Robert Kim (Compliance)
+    expected_response: >
+      IR lead and Legal immediately initiate formal BAA contact with Nexus SecOps (+1 512 555 0184) and CISO Marcus Oduya rather than account executive channels; technical team prepares emergency isolation procedures.
+
+  - id: INJ-02
+    time_minutes: 40
+    delivery: facilitator reads aloud
+    situation: >
+      EDR logs confirm the backdoor on SCHED-SVR-01 has executed shell commands using the service principal `svc-nexus-prod`, querying Epic HL7 FHIR endpoints (`https://ehr-ingest.meddefense.local/nexus-inbound/`). The IR team recommends severing the IPsec tunnel and disabling `svc-nexus-prod` immediately. However, doing so will instantly freeze outpatient pre-registration and appointment processing across all three sites (3,500 patient interactions weekly).
+    capability_tested: CAP-03
+    decision_point: Sever the IPsec tunnel and FHIR integration immediately, or maintain active connections while monitoring? Who holds final authority?
+    roles_challenged:
+      - James Chen (IR Lead)
+      - Clinical Director Representative
+      - Dr. Patricia Morales (Executive Sponsor)
+    expected_response: >
+      Explicit leadership decision balancing patient safety against security risk; activation of paper/manual fallback scheduling; documented sign-off from Executive Sponsor and Clinical Director before severing network paths.
+
+  - id: INJ-03
+    time_minutes: 60
+    delivery: facilitator reads aloud
+    situation: >
+      Forensic analysis reveals that exfiltrated packets contained demographic records, insurance eligibility details, and appointment schedules for 12,000 patients across Main Campus, West Campus, and North Site. Crucially, log traces indicate inbound appointment modify requests were processed by Epic during the compromise window, suggesting appointment times or provider assignments may have been altered.
+    capability_tested: CAP-06
+    decision_point: How does MedDefense verify data integrity for active patients, and how are clinical workflows safeguarded against corrupted schedule data?
+    roles_challenged:
+      - Clinical Director Representative
+      - Marcus Webb (Operations)
+      - James Chen (IR Lead)
+    expected_response: >
+      Clinical operations halts reliance on unverified digital rosters; initiates manual verification of patient schedules against local Epic backup logs; establishes a validation protocol for upcoming day appointments.
+
+  - id: INJ-04
+    time_minutes: 75
+    delivery: facilitator reads aloud
+    situation: >
+      Nexus SecOps states via email that they are still investigating and request MedDefense delay any public or regulatory reporting for 72 hours while they assess subprocessor impact (AWS, Twilio, SendGrid). However, MedDefense Legal Counsel notes that ePHI exfiltration is confirmed, and HIPAA Breach Notification clocks for covered entities operate independently of vendor requests.
+    capability_tested: CAP-04, CAP-05
+    decision_point: Does MedDefense initiate its HIPAA breach notification evaluation immediately or honor Nexus's request to wait 72 hours?
+    roles_challenged:
+      - Sarah Park (Legal Counsel)
+      - Robert Kim (Compliance)
+      - Dr. Patricia Morales (Executive Sponsor)
+    expected_response: >
+      Legal Counsel rejects vendor-imposed delay; formally starts MedDefense's HIPAA Breach Notification assessment clock; drafts preliminary notification letters for HHS OCR and affected individuals.
+
+  - id: INJ-05
+    time_minutes: 90
+    delivery: facilitator reads aloud
+    situation: >
+      A reporter from a regional news outlet calls MedDefense PR stating they received a tip that patient scheduling is down across all three sites due to a ransomware attack. Simultaneously, patients on social media report cancelled appointments and missing check-in data. The reporter gives MedDefense 30 minutes to provide a statement before publishing.
+    capability_tested: CAP-07
+    decision_point: What is released to the press and public? How do you address media speculation without violating HIPAA or compromising ongoing technical investigation?
+    roles_challenged:
+      - Helena Reyes (Communications / PR)
+      - Sarah Park (Legal Counsel)
+      - Dr. Patricia Morales (Executive Sponsor)
+    expected_response: >
+      PR issues an approved, legally vetted holding statement confirming operational adjustments and commitment to data protection; refutes unverified ransomware claims; establishes an official patient query channel.
+
+  - id: INJ-06
+    time_minutes: 110
+    delivery: facilitator reads aloud
+    situation: >
+      The Board of Directors requests an emergency status briefing in 10 minutes. While containment steps are underway, the team cannot determine whether the threat actor retains persistence within Nexus's multi-tenant SaaS environment (`us-east-1`), nor when it will be safe to re-establish FHIR API integration.
+    capability_tested: CAP-08
+    decision_point: How is the briefing structured for board leadership? How does executive management address the unresolved vendor persistence question?
+    roles_challenged:
+      - James Chen (IR Lead)
+      - Sarah Park (Legal Counsel)
+      - Dr. Patricia Morales (Executive Sponsor)
+    expected_response: >
+      Delivery of a concise executive briefing summarizing incident timeline, containment status, clinical impact, and HIPAA posture; explicit acknowledgment of the unresolved vendor persistence risk with clear criteria required before reconnecting.
