@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 echo "Running recovery validation checks for IR-2026-0420-01..."
