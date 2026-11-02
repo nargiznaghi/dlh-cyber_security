@@ -1,0 +1,142 @@
+- id: ERAD-001
+  category: beacon_process
+  target_host: CS-WS-101
+  description: Terminate rogue svchost32.exe process and child trees
+  command_or_action: Stop-Process -Name svchost32 -Force
+  verification_command: Get-Process -Name svchost32 -ErrorAction SilentlyContinue
+  expected_verification_result: "No process found"
+  status: completed
+  executed_at: '2026-04-20T21:10Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-002
+  category: persistence
+  target_host: CS-WS-101
+  description: Remove malicious Windows Service WinHealthSvc
+  command_or_action: Remove-Service -Name WinHealthSvc
+  verification_command: Get-Service -Name WinHealthSvc -ErrorAction SilentlyContinue
+  expected_verification_result: "Service not found"
+  status: completed
+  executed_at: '2026-04-20T21:15Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-003
+  category: staged_payload
+  target_host: CS-WS-101
+  description: Remove ransomware staging scripts from ProgramData
+  command_or_action: Remove-Item -Path "C:\ProgramData\Microsoft\staged_*.bat" -Force
+  verification_command: Test-Path "C:\ProgramData\Microsoft\staged_*.bat"
+  expected_verification_result: "False"
+  status: completed
+  executed_at: '2026-04-20T21:20Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-004
+  category: beacon_process
+  target_host: CS-WS-104
+  description: Terminate rogue svchost32.exe process on CS-WS-104
+  command_or_action: Stop-Process -Name svchost32 -Force
+  verification_command: Get-Process -Name svchost32 -ErrorAction SilentlyContinue
+  expected_verification_result: "No process found"
+  status: completed
+  executed_at: '2026-04-20T21:25Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-005
+  category: persistence
+  target_host: CS-WS-104
+  description: Remove WinHealthSvc service on CS-WS-104
+  command_or_action: Remove-Service -Name WinHealthSvc
+  verification_command: Get-Service -Name WinHealthSvc -ErrorAction SilentlyContinue
+  expected_verification_result: "Service not found"
+  status: completed
+  executed_at: '2026-04-20T21:28Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-006
+  category: beacon_process
+  target_host: CS-WS-107
+  description: Terminate rogue svchost32.exe process on CS-WS-107
+  command_or_action: Stop-Process -Name svchost32 -Force
+  verification_command: Get-Process -Name svchost32 -ErrorAction SilentlyContinue
+  expected_verification_result: "No process found"
+  status: completed
+  executed_at: '2026-04-20T21:32Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-007
+  category: persistence
+  target_host: CS-WS-107
+  description: Remove WinHealthSvc service on CS-WS-107
+  command_or_action: Remove-Service -Name WinHealthSvc
+  verification_command: Get-Service -Name WinHealthSvc -ErrorAction SilentlyContinue
+  expected_verification_result: "Service not found"
+  status: completed
+  executed_at: '2026-04-20T21:35Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-008
+  category: beacon_process
+  target_host: CS-WS-112
+  description: Terminate rogue svchost32.exe process on CS-WS-112
+  command_or_action: Stop-Process -Name svchost32 -Force
+  verification_command: Get-Process -Name svchost32 -ErrorAction SilentlyContinue
+  expected_verification_result: "No process found"
+  status: completed
+  executed_at: '2026-04-20T21:40Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-009
+  category: persistence
+  target_host: CS-WS-112
+  description: Remove WinHealthSvc service on CS-WS-112
+  command_or_action: Remove-Service -Name WinHealthSvc
+  verification_command: Get-Service -Name WinHealthSvc -ErrorAction SilentlyContinue
+  expected_verification_result: "Service not found"
+  status: completed
+  executed_at: '2026-04-20T21:42Z'
+  executed_by: Nargiz Naghiyeva
+
+- id: ERAD-010
+  category: credential
+  target_host: AD-DC-01
+  description: Reset compromised passwords for all dwell-period accounts (ClinicalCoord)
+  command_or_action: Set-ADUser -Identity "ClinicalCoord" -ChangePasswordAtLogon $true
+  verification_command: Get-ADUser -Identity "ClinicalCoord" -Properties PasswordLastSet
+  expected_verification_result: "PasswordLastSet < 5 minutes ago"
+  status: completed
+  executed_at: '2026-04-20T21:50Z'
+  executed_by: James Chen
+
+- id: ERAD-011
+  category: kerberos
+  target_host: AD-DC-01
+  description: Perform dual reset of KRBTGT account to invalidate existing TGTs
+  command_or_action: Invoke-KrbtgtReset
+  verification_command: Get-ADUser -Identity "krbtgt" -Properties PasswordLastSet
+  expected_verification_result: "PasswordLastSet < 10 minutes ago"
+  status: completed
+  executed_at: '2026-04-20T21:55Z'
+  executed_by: James Chen
+
+- id: ERAD-012
+  category: network
+  target_host: Perimeter-FW-01
+  description: Implement permanent drop rule for C2 IP 193.42.100.77 and DNS sinkhole for squatted domains
+  command_or_action: iptables -A OUTPUT -d 193.42.100.77 -j DROP
+  verification_command: iptables -L OUTPUT -v | grep 193.42.100.77
+  expected_verification_result: "DROP rule active with packet count increment"
+  status: completed
+  executed_at: '2026-04-20T22:00Z'
+  executed_by: Mike Torres
+
+- id: ERAD-013
+  category: machine_account
+  target_host: FILE-SVR-01
+  description: Revoke and regenerate Kerberos machine account keys for file server
+  command_or_action: Reset-ComputerAccount -ComputerName FILE-SVR-01
+  verification_command: Test-ComputerSecureChannel -ComputerName FILE-SVR-01
+  expected_verification_result: "True"
+  status: completed
+  executed_at: '2026-04-20T22:05Z'
+  executed_by: James Chen
