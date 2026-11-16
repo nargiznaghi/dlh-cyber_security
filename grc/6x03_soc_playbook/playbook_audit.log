@@ -1,1 +1,2 @@
 2026-11-16T14:02:45Z | PHISHING_TRIAGE | ALT-20260428-001 | IOCs:2 | BLOCK:2,INVESTIGATE:0,ALLOW:0 | Verdict:ESCALATE | Case:CASE-20261116-001 | Severity:Critical
+2026-11-16T14:06:13Z | CREDENTIAL_EXPOSURE | ALT-20260428-007 | Host:WST-WS-031 | User:svc_helpdesk | IPVerdict:BLOCK | Privilege:Domain Admin | Case:CASE-20261116-002 | Severity:Critical | IsolationQueued:yes
