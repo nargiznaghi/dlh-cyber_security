@@ -1,14 +1,25 @@
 # MedDefense Backup Architecture
 
-**Version:** 1.0  
-**Classification:** Confidential  
 **Prepared by:** Nargiz Naghiyeva, IT Security  
 **Date:** 2026-11-12  
-**Approved by:** _________________________ Date: _________
+**Approved by:** _________________________ Date: _________  
+**Version:** 1.0  
+**Classification:** Confidential  
 
 ## Strategy Overview
 
 This document translates the recovery objectives established in `business_impact_analysis.md` version 1.0 into an implementable backup architecture for every Tier 1 and Tier 2 system. It addresses the five defects documented in the backup log review and resolves the three RPO conflicts where declared objectives were shorter than backup frequency could mathematically deliver.
+
+### 3-2-1 Backup Strategy Rationale
+
+To ensure absolute resilience against hardware failures, site power loss, and ransomware attacks, MedDefense mandates the **3-2-1 backup strategy** across all Tier 1 and Tier 2 workloads:
+1. **3 Copies:** Maintain at least three copies of all critical data (one primary production copy and two distinct backup copies).
+2. **2 Different Media:** Store backups across at least two different storage media/types (e.g., high-performance local SAN storage arrays and immutable cloud object storage).
+3. **1 Off-Site Copy:** Keep at least one backup copy in a geographically separate off-site location (CloudVault Medical isolated vaults) to ensure site-loss survivability.
+
+### Dependency-Aware Design
+
+Backup and recovery design cannot operate in isolation. Every backup and restoration workflow in this architecture is structured around strict technical dependency mapping. Because downstream clinical systems (such as Epic EHR, LIS, and Pharmacy Dispensing) rely entirely on foundational infrastructure (Network Core, Active Directory, and Backup/DR Infrastructure), the restoration sequence and backup verification protocols explicitly respect these dependencies to prevent cascading restoration failures or database corruption.
 
 ### Governing Principle
 
@@ -20,7 +31,7 @@ Achievable RPO can never be better than backup frequency. A system declaring a 1
 |---|---|---|
 | Operational backup | Frequent recovery points meeting RPO | All Tier 1 and Tier 2 systems |
 | Local retention | Rapid restoration within RTO | Primary destination, on-site |
-| Geographically separate copy | Site-loss survivability | Mandatory for all Tier 1 systems |
+| Geographically separate copy | Site-loss survivability (3-2-1 off-site requirement) | Mandatory for all Tier 1 systems |
 | Archive retention | Regulatory and legal hold | ePHI systems, up to 7 years |
 
 ### Defects Addressed from Backup Log Review
@@ -69,10 +80,10 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Incremental config backup every 1 hour; full configuration snapshot daily at 01:00 |
 | Retention | Recent: 90 days hourly and daily. Monthly: 12 monthly full sets. Archive: 7 years configuration archive |
 | Primary destination | Network management server, encrypted local volume, on-site |
-| Secondary destination | Encrypted Git repository in geographically separate region |
+| Secondary destination | Encrypted Git repository in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS; annual rotation |
 | Encryption in transit | TLS 1.2+ over HTTPS and SFTP transport |
-| Integrity verification | SHA-256 hash per configuration file; diff check after every backup; quarterly restore to lab switch with routing and VLAN validation |
+| Integrity verification | SHA-256 hash per configuration file; diff check after every backup; quarterly restore to lab switch with routing and VLAN validation; tester identity and date recorded |
 | Restoration sequence | 1. Retrieve most recent verified hourly configuration set. 2. Restore core switch and router configurations. 3. Validate routing, switching and VLAN segmentation. 4. Bring WAN interfaces up. 5. Confirm reachability for Active Directory, backup replication, PACS image movement and device gateway. |
 | Responsible role | Executes: Network Engineering Lead. Verifies: Infrastructure Manager |
 
@@ -84,10 +95,10 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | VM snapshot every 1 hour; system state backup daily at 01:00; continuous replication to secondary domain controller |
 | Retention | Recent: 30 days hourly snapshots and daily system state. Monthly: 12 monthly full sets. Archive: 180 days |
 | Primary destination | Backup NAS rack A, on-site |
-| Secondary destination | Encrypted object storage account in geographically separate region |
+| Secondary destination | Encrypted object storage account in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS; VM disk encryption enabled |
 | Encryption in transit | TLS 1.2+ and LDAPS for directory traffic |
-| Integrity verification | SHA-256 manifest per backup; quarterly non-authoritative restore test into isolated forest; validation via dcdiag and repadmin replication status |
+| Integrity verification | SHA-256 manifest per backup; quarterly non-authoritative restore test into isolated forest; validation via dcdiag and repadmin replication status; tester identity and date recorded |
 | Restoration sequence | 1. Confirm secondary domain controller health and replication state. 2. Perform non-authoritative restore of primary domain controller from most recent verified backup. 3. Monitor for USN rollback conditions. 4. Confirm inbound replication converges. 5. Run dcdiag validation suite. 6. Verify authentication for dependent systems before releasing them. |
 | Responsible role | Executes: Systems Administrator. Verifies: Infrastructure Manager |
 
@@ -99,10 +110,10 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Replication every 15 minutes; transaction log ship every 1 hour; full export nightly at 23:00 |
 | Retention | Recent: 35 days vendor retention. Monthly: 12 monthly full sets. Archive: 7 years |
 | Primary destination | Vendor-hosted disaster recovery site |
-| Secondary destination | Vendor cold archive in geographically separate region |
+| Secondary destination | Vendor cold archive in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; vendor-managed with MedDefense key escrow held separately |
 | Encryption in transit | TLS 1.2+ |
-| Integrity verification | Vendor monthly restore certificate plus MedDefense quarterly application-level validation with record count and allergy-verification checks |
+| Integrity verification | Vendor monthly restore certificate plus MedDefense quarterly application-level validation with record count and allergy-verification checks; tester identity and date recorded |
 | Restoration sequence | 1. Confirm Network Core and Active Directory available. 2. Initiate vendor failover to disaster recovery site. 3. Validate database integrity and record counts. 4. Reconnect LIS interface, pharmacy and PACS/RIS interfaces. 5. Validate order entry and allergy verification. 6. Release to clinical use. |
 | Responsible role | Executes: Clinical Applications Manager. Verifies: IT Incident Commander |
 
@@ -114,7 +125,7 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Full dump nightly at 23:30; transaction log backup every 1 hour |
 | Retention | Recent: 30 days full and hourly logs. Monthly: 12 monthly full sets. Archive: 1 year |
 | Primary destination | Backup NAS at `/backup/lis`, on-site |
-| Secondary destination | CloudVault Medical backup bucket, geographically separate region |
+| Secondary destination | CloudVault Medical backup bucket, geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; gzip archive encrypted with asymmetric key, private key held in hardware-backed KMS |
 | Encryption in transit | TLS 1.2+ over SFTP and HTTPS transport |
 | Integrity verification | SHA-256 manifest per artifact; row count validation via `SELECT COUNT(*) FROM patient_orders;`; critical record verification for MRN-10043 and MRN-10045; tester identity and date recorded |
@@ -129,10 +140,10 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Database backup every 1 hour; cabinet configuration export every 1 hour; full configuration snapshot daily at 01:00 |
 | Retention | Recent: 30 days hourly. Monthly: 12 monthly full sets. Archive: 1 year |
 | Primary destination | Pharmacy backup share, on-site |
-| Secondary destination | Encrypted cloud copy in geographically separate region |
+| Secondary destination | Encrypted cloud copy in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS |
 | Encryption in transit | TLS 1.2+ |
-| Integrity verification | Weekly hash verification; monthly restore test including controlled substance reconciliation against cabinet counts |
+| Integrity verification | Weekly hash verification; monthly restore test including controlled substance reconciliation against cabinet counts; tester identity and date recorded |
 | Restoration sequence | 1. Confirm Network Core and Active Directory available. 2. Restore database from most recent verified hourly backup. 3. Restore cabinet configuration. 4. Reconcile controlled substance counts and document variances. 5. Reconnect Epic medication ordering interface. 6. Validate allergy and interaction checking before release. |
 | Responsible role | Executes: Pharmacy IT Lead. Verifies: Clinical Applications Manager |
 
@@ -144,7 +155,7 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Catalog backup every 1 hour; configuration export daily at 01:00 |
 | Retention | Recent: 30 days hourly catalog. Monthly: 12 monthly full sets. Archive: 1 year off-site |
 | Primary destination | Disaster recovery platform storage, on-site |
-| Secondary destination | Isolated backup account in geographically separate region, credentials not reachable from production |
+| Secondary destination | Isolated backup account in geographically separate region (3-2-1 off-site copy), credentials not reachable from production |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS, isolated from production credential store |
 | Encryption in transit | TLS 1.2+ |
 | Integrity verification | Monthly catalog restore test; quarterly timed full restore rehearsal recording elapsed duration; tester identity and date recorded |
@@ -159,7 +170,7 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Image storage snapshot every 1 hour; RIS database backup every 1 hour; metadata export nightly at 23:00 |
 | Retention | Recent: 30 days hot. Monthly: 12 monthly full sets. Archive: 7 years |
 | Primary destination | PACS storage cluster, on-site |
-| Secondary destination | Cloud object archive in geographically separate region |
+| Secondary destination | Cloud object archive in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS |
 | Encryption in transit | TLS 1.2+ |
 | Integrity verification | Quarterly restore test reinstated after documented miss; metadata-to-image reconciliation count; tester identity and date recorded |
@@ -174,10 +185,10 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Incremental configuration export every 4 hours; full configuration export daily at 02:30 |
 | Retention | Recent: 14 days. Monthly: 12 monthly full sets. Archive: 90 days |
 | Primary destination | Biomed file share, on-site |
-| Secondary destination | Encrypted off-site copy in geographically separate region, newly introduced to close the documented geographic copy gap |
+| Secondary destination | Encrypted off-site copy in geographically separate region (3-2-1 off-site copy), newly introduced to close the documented geographic copy gap |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS |
 | Encryption in transit | TLS 1.2+ |
-| Integrity verification | SHA-256 hash per configuration file replacing manual file existence check; quarterly restore test newly mandated |
+| Integrity verification | SHA-256 hash per configuration file replacing manual file existence check; quarterly restore test newly mandated; tester identity and date recorded |
 | Restoration sequence | 1. Confirm Network Core available and VLAN segmentation restored. 2. Restore gateway configuration. 3. Validate VLAN segmentation and device connectivity. 4. Confirm telemetry flow into Epic. 5. Validate alarm routing to nursing units before release. |
 | Responsible role | Executes: Biomedical IT Lead. Verifies: Clinical Applications Manager |
 
@@ -189,43 +200,31 @@ Four systems operate at zero margin, meaning backup frequency exactly equals dec
 | Schedule | Index snapshot every 4 hours; configuration backup daily at 01:00 |
 | Retention | Recent: 30 days hot. Monthly: 12 monthly full sets. Archive: 180 days cold |
 | Primary destination | SIEM storage, on-site |
-| Secondary destination | Cloud archive in geographically separate region |
+| Secondary destination | Cloud archive in geographically separate region (3-2-1 off-site copy) |
 | Encryption at rest | AES-256; dedicated key in hardware-backed KMS |
 | Encryption in transit | TLS 1.2+ |
-| Integrity verification | Snapshot status check plus quarterly restore test with alerting validation, newly mandated to close the untested alerting continuity gap |
+| Integrity verification | Snapshot status check plus quarterly restore test with alerting validation, newly mandated to close the untested alerting continuity gap; tester identity and date recorded |
 | Restoration sequence | 1. Confirm Network Core and Active Directory available. 2. Restore SIEM configuration. 3. Restore index snapshot. 4. Reconnect log sources. 5. Validate alerting and endpoint detection management. 6. Confirm reduced-mode monitoring plan was active during earlier restoration phases. |
 | Responsible role | Executes: SOC Manager. Verifies: IT Incident Commander |
 
-## Full Data Center Loss: Restoration Sequence
+## Full Data Center Loss: Restoration Sequence (Dependency-Aware)
 
-This sequence assumes total loss of the primary data center with no surviving production infrastructure. Order is determined by dependency, not alphabetically. Elapsed durations are planning estimates derived from the RTO values in the BIA and must be validated by test; they are not measured results.
+This sequence assumes total loss of the primary data center with no surviving production infrastructure. Order is determined strictly by technical dependencies, not alphabetically. Elapsed durations are planning estimates derived from the RTO values in the BIA and must be validated by test; they are not measured results.
 
 ### Phase 0: Declaration and Activation (0 to 30 minutes)
-
 Administrator on Call authorises hospital-wide downtime declaration at extension 7000. Nursing Supervisor coordinates units at extension 7100. IT Incident Commander confirms outage scope at extension 7200. Clinical Applications Lead confirms clinical system status at extension 7300. Paper downtime procedures activate per the nursing station downtime binders and paper forms inventory.
 
-### Phase 1: Network Core
+### Phase 1: Network Core (Foundational Dependency)
+Prerequisite: None. All subsequent phases are blocked until complete. Restore device configurations from the most recent verified hourly backup. Validate routing, switching, WAN reachability and VLAN segmentation. Confirm the network path required for backup replication traffic is available. Target: within 2 hours of declaration.
 
-Prerequisite: none. All subsequent phases are blocked until complete.
+### Phase 2: Active Directory (Identity Dependency)
+Prerequisite: Network Core reachable. Confirm secondary domain controller health. Perform non-authoritative restore of the primary domain controller. Monitor for USN rollback. Confirm replication convergence and run validation suite. Identity must be functional before any authenticated clinical system is released. Target: within 2 hours of Phase 1 completion.
 
-Restore device configurations from the most recent verified hourly backup. Validate routing, switching, WAN reachability and VLAN segmentation. Confirm the network path required for backup replication traffic is available. Target: within 2 hours of declaration.
+### Phase 3: Backup and DR Infrastructure (Recovery Tooling Dependency)
+Prerequisite: Network Core and Active Directory. Restore the backup catalog from the isolated account, validate catalog integrity, restore storage access credentials and confirm restore tooling operational. This phase is sequenced third because every remaining restoration depends on the catalog being able to locate and serve backup artifacts. Target: within 3 hours of Phase 2 completion.
 
-### Phase 2: Active Directory
-
-Prerequisite: Network Core reachable.
-
-Confirm secondary domain controller health. Perform non-authoritative restore of the primary domain controller. Monitor for USN rollback. Confirm replication convergence and run validation suite. Identity must be functional before any authenticated clinical system is released. Target: within 2 hours of Phase 1 completion.
-
-### Phase 3: Backup and DR Infrastructure
-
-Prerequisite: Network Core and Active Directory.
-
-Restore the backup catalog from the isolated account, validate catalog integrity, restore storage access credentials and confirm restore tooling operational. This phase is sequenced third despite not being patient-facing because every remaining restoration depends on the catalog being able to locate and serve backup artifacts. Skipping it converts remaining recovery attempts into manual media hunting. Target: within 3 hours of Phase 2 completion.
-
-### Phase 4: Tier 1 Clinical Systems
-
-Prerequisite: Phases 1 through 3 complete. Within this phase, order is driven by patient safety consequence and interface dependency.
-
+### Phase 4: Tier 1 Clinical Systems (Core Patient Care)
+Prerequisite: Phases 1 through 3 complete. Within this phase, order is driven by patient safety consequence and interface dependency:
 1. Epic EHR: restore and validate, then reconnect interfaces. Order entry and allergy verification must function before dependent systems release.
 2. Laboratory Information System: restore full dump, apply hourly transaction logs, validate row count and critical records, reconnect interface engine and analyser feeds.
 3. Pharmacy Dispensing System: restore database and cabinet configuration, reconcile controlled substances, validate allergy and interaction checking.
@@ -233,22 +232,16 @@ Prerequisite: Phases 1 through 3 complete. Within this phase, order is driven by
 Target: within 4 hours of Phase 3 completion for each system.
 
 ### Phase 5: Tier 2 Clinical Support Systems
-
-Prerequisite: Phase 4 complete.
-
+Prerequisite: Phase 4 complete:
 1. PACS/RIS: restore metadata database first, then mount image storage, then reconcile metadata to images, then reconnect order interface and modalities.
 2. Medical Device Integration Gateway: restore configuration, validate VLAN segmentation, confirm telemetry flow into Epic and alarm routing to nursing units.
 
 Target: within 6 hours of Phase 4 completion for each system.
 
 ### Phase 6: Security and Monitoring Visibility
-
-Prerequisite: Phase 5 complete.
-
-Security Operations Platform: restore configuration and index snapshot, reconnect log sources, validate alerting and endpoint detection management. Reduced-mode monitoring must have been maintained manually throughout Phases 0 through 5, since detection and response capability is degraded during the entire restoration window while attack risk rises. Target: within 6 hours of Phase 5 completion.
+Prerequisite: Phase 5 complete. Security Operations Platform: restore configuration and index snapshot, reconnect log sources, validate alerting and endpoint detection management. Reduced-mode monitoring must have been maintained manually throughout Phases 0 through 5. Target: within 6 hours of Phase 5 completion.
 
 ### Phase 7: Remaining Systems
-
 Email and Secure Messaging and any business support systems restore last, per the recovery sequence in the dependency map seed.
 
 ## Dependency Restore Constraints
@@ -256,27 +249,16 @@ Email and Secure Messaging and any business support systems restore last, per th
 The following constraints are hard ordering rules. Violating any of them wastes restoration time and can force a restart of the dependent system's recovery.
 
 1. **Network Core precedes everything.** No authenticated, replicated or remotely retrieved restoration is possible without routing, switching and WAN reachability.
-
 2. **Active Directory precedes all authenticated clinical systems.** Epic EHR, LIS, PACS/RIS, Pharmacy and Security Operations all depend on domain authentication. Restoring a clinical application into a non-functional identity plane produces a system that boots but cannot be used.
-
-3. **Backup and DR Infrastructure precedes all restores that consume backup artifacts.** The catalog must be available to locate and serve backups. This is the constraint most commonly overlooked, because the backup platform is not patient-facing and therefore rarely appears in clinical recovery sequencing.
-
-4. **Epic EHR precedes or parallels Pharmacy and PACS/RIS interface reconnection.** Pharmacy medication ordering and PACS/RIS order interfaces terminate in Epic. Restoring those systems before Epic's interface layer is available leaves them functionally isolated.
-
-5. **LIS interface engine depends on Epic interface availability.** Result posting to Epic requires the interface layer. LIS internal validation can proceed in parallel, but clinical release waits on the interface.
-
-6. **PACS/RIS metadata must be restored before image store mounting is considered complete.** Images without a metadata layer cannot be associated to patients or studies, and radiologists cannot retrieve prior studies.
-
-7. **Medical Device Integration Gateway requires VLAN segmentation before configuration restore is meaningful.** The gateway's function depends on network segmentation being in place. Configuration restored onto an unsegmented network will not route telemetry correctly.
-
-8. **Active Directory restore requires an authoritative versus non-authoritative decision before execution.** With a healthy secondary domain controller, non-authoritative restore is the correct default. An authoritative restore forces the restored state onto the replica partner and is reserved for deliberate forest-wide rollback of deleted objects.
-
-9. **USN rollback risk must be assessed before restoring a domain controller holding FSMO roles.** Improper restoration can silently halt replication, producing a domain controller that appears healthy while propagating nothing.
-
-10. **Security Operations Platform restores late, but reduced-mode monitoring activates early.** Detection capability must be maintained manually from Phase 0 onward. Deferring security visibility until Phase 6 without a compensating control leaves the organisation blind during the period of greatest exposure.
-
-11. **Zero-margin systems require backup failure alerting.** Network Core, Active Directory, LIS and PACS/RIS operate with backup frequency equal to declared RPO. A single missed window breaches the objective, so alerting and same-window retry are mandatory rather than optional.
-
-12. **Every restoration requires recorded tester identity and date.** Per Finding 4, a log entry stating a job completed proves only that a job ended. Verification requires hash validation, a test restore, record count or application-level checks, and named accountability.
+3. **Backup and DR Infrastructure precedes all restores that consume backup artifacts.** The catalog must be available to locate and serve backups.
+4. **Epic EHR precedes or parallels Pharmacy and PACS/RIS interface reconnection.** Pharmacy medication ordering and PACS/RIS order interfaces terminate in Epic.
+5. **LIS interface engine depends on Epic interface availability.** Result posting to Epic requires the interface layer.
+6. **PACS/RIS metadata must be restored before image store mounting is considered complete.** Images without a metadata layer cannot be associated to patients or studies.
+7. **Medical Device Integration Gateway requires VLAN segmentation before configuration restore is meaningful.**
+8. **Active Directory restore requires an authoritative versus non-authoritative decision before execution.**
+9. **USN rollback risk must be assessed before restoring a domain controller holding FSMO roles.**
+10. **Security Operations Platform restores late, but reduced-mode monitoring activates early.**
+11. **Zero-margin systems require backup failure alerting.** Network Core, Active Directory, LIS and PACS/RIS operate with backup frequency equal to declared RPO.
+12. **Every restoration requires recorded tester identity, date, and verification beyond completion logs.** Per Finding 4 and Finding 5, a log entry stating a job completed proves only that a job ended. Verification requires hash validation, test restores, record counts, and named accountability.
 
 ---
