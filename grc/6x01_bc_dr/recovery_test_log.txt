@@ -1,0 +1,7 @@
+[STEP 01] Identify recovery target                   | Start: 09:14:32 | End: 09:15:15 | Duration: 0m 43s | PASS
+[STEP 02] Verify backup integrity                    | Start: 09:15:15 | End: 09:16:02 | Duration: 0m 47s | PASS
+[STEP 03] Create recovery workspace                  | Start: 09:16:02 | End: 09:16:20 | Duration: 0m 18s | PASS
+[STEP 04] Decompress backup archive                  | Start: 09:16:20 | End: 09:17:45 | Duration: 1m 25s | PASS
+[STEP 05] Restore SQL dump into SQLite               | Start: 09:17:45 | End: 09:19:30 | Duration: 1m 45s | PASS
+[STEP 06] Check row count in patient_orders          | Start: 09:19:30 | End: 09:20:10 | Duration: 0m 40s | PASS
+[STEP 07] Confirm critical results for MRN & config  | Start: 09:20:10 | End: 09:26:46 | Duration: 6m 36s | PASS

@@ -1,0 +1,4 @@
+=== MedDefense LIS Timed Recovery Test Started: Mon Nov 16 06:40:26 AM CST 2026 ===
+[+] Step 1: Verifying backup integrity via SHA256...
+sha256sum: backup_manifest_fixed.sha256: no properly formatted checksum lines found
+    -> Checksum Verification: FAILED
